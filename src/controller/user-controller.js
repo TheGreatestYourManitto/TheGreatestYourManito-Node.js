@@ -1,29 +1,23 @@
 import { responseStatus } from '../../common/response-status.js';
-import { getTempData } from '../service/user-service.js';
 import { baseResponse } from '../../common/base-response.js';
-import { checkFlag } from '../service/user-service.js';
-
-export const tempTest = (req, res, next) => {
-    res.send(response(responseStatus.SUCCESS, getTempData()));
-};
-
-export const tempException = (req, res, next) => {
-    console.log(`/temp/exception/${req.params.flag}`);
-    return res.send(baseResponse(responseStatus.SUCCESS, checkFlag(req.params.flag)));
-}
-
 import { createUser } from '../service/user-service.js';
+import { postUserDto } from '../dto/user-dto.js';
+import asyncHandler from 'express-async-handler';
 
-export const createUserController = async (req, res, next) => {
-    try {
-        const { nickname, deviceId } = req.body;
-        if (!nickname || !deviceId) {
-            return res.status(400).json({ message: 'Nickname and deviceId are required' });
+export const UserController = {
+    postUser: asyncHandler(async (req, res) => {
+        const { error, value } = postUserDto.validate(req.body);  // Joi 스키마를 사용한 유효성 검사
+
+        if (error) { // 유효성 검사 에러 발생 시
+            throw new BaseError(responseStatus(StatusCodes.BAD_REQUEST, error.details[0].message));
         }
 
+        // Joi 검증을 통과한 유효한 데이터 추출
+        const { nickname, deviceId } = value;
+
+        // 서비스에서 유저 생성 로직 처리
         const userIdentifier = await createUser(nickname, deviceId);
-        res.status(201).json({ result: { userIdentifier } });
-    } catch (error) {
-        next(error);  // Error handling middleware로 넘김
-    }
-};
+
+        return res.status(201).json(baseResponse(responseStatus.CREATED, { userIdentifier }));
+    })
+}
