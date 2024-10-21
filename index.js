@@ -1,8 +1,10 @@
 import express from 'express';
-import { tempRouter } from './src/router/temp-route';
-import { BaseError } from './global/base-error';
-import { responseStatus } from './global/response-status';
+import { tempRouter } from './src/router/temp-route.js';
+import { BaseError } from './global/base-error.js';
+import { responseStatus } from './global/response-status.js';
 import dotenv from 'dotenv';
+import { specs } from './global/config/swagger-config.js';
+import SwaggerUi from 'swagger-ui-express';
 
 dotenv.config();
 
@@ -10,13 +12,21 @@ const app = express();
 
 app.set('port', process.env.PORT || 3000)
 
+app.use(express.urlencoded({ extended: false })); // 단순 객체 문자열 형태로 본문 데이터 해석
+
+// swagger
+app.use('/api-docs', SwaggerUi.serve, SwaggerUi.setup(specs));
+
+// router setting
 app.use('/temp', tempRouter);
 
+// error handling
 app.use((req, res, next) => {
     const err = new BaseError(responseStatus.NOT_SUPPORTED_URI_ERROR);
     next(err);
 });
 
+// error handling
 app.use((err, req, res, next) => {
     // 템플릿 엔진 변수 설정
     res.locals.message = err.message;
