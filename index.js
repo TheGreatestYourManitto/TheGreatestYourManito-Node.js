@@ -1,9 +1,9 @@
 import express from 'express';
 import { tempRouter } from './src/router/temp-route.js';
-import { BaseError } from './global/base-error.js';
-import { responseStatus } from './global/response-status.js';
+import { BaseError } from './common/base-error.js';
+import { responseStatus } from './common/response-status.js';
 import dotenv from 'dotenv';
-import { specs } from './global/config/swagger-config.js';
+import { specs } from './common/config/swagger-config.js';
 import SwaggerUi from 'swagger-ui-express';
 
 dotenv.config();
