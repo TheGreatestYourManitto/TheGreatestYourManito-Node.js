@@ -1,4 +1,5 @@
-import { BaseError, responseStatus, baseResponse, StatusCodes } from '../../common/index.js';
+import { responseStatus, baseResponse, StatusCodes } from '../../common/index.js';
+import { throwError } from '../../common/error-helper.js';
 import { createUser } from '../service/user-service.js';
 import { UserSchema } from '../dto/user-dto.js';
 import asyncHandler from 'express-async-handler';
@@ -8,7 +9,7 @@ export const UserController = {
         const { error, value } = UserSchema.postUserDto.validate(req.body);  // Joi 스키마를 사용한 유효성 검사
 
         if (error) { // 유효성 검사 에러 발생 시
-            throw new BaseError(responseStatus(StatusCodes.BAD_REQUEST, error.details[0].message));
+            throwError(StatusCodes.BAD_REQUEST, error.details[0].message);
         }
 
         // Joi 검증을 통과한 유효한 데이터 추출

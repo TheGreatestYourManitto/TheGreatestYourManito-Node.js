@@ -1,4 +1,5 @@
-import { BaseError, responseStatus, StatusCodes } from '../../common/index.js';
+import { StatusCodes } from '../../common/index.js';
+import { throwError } from '../../common/error-helper.js';
 import { insertUser, isUserCodeExists } from '../dao/user-dao.js';
 
 /**
@@ -38,7 +39,7 @@ export const createUser = async (nickname, deviceId) => {
     }
 
     if (attempt === maxAttempts) {
-        throw new BaseError(responseStatus(StatusCodes.INTERNAL_SERVER_ERROR, '유저 코드를 생성할 수 없습니다.'));
+        throwError(StatusCodes.INTERNAL_SERVER_ERROR, '유저 코드를 생성할 수 없습니다.');
     }
 
     // DAO에 유저 저장
