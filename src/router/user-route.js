@@ -1,18 +1,9 @@
 import express from 'express';
-import { tempTest, tempException } from '../controller/user-controller.js';
+import { createUserController } from '../controller/user-controller.js';
 
-export const tempRouter = express.Router();
+const router = express.Router();
 
-tempRouter.get('/test', tempTest);
-tempRouter.get('/exception/:flag', tempException);
+// 유저 생성 API
+router.post('/', createUserController);
 
-// user.route.js
-
-import express from "express";
-import asyncHandler from 'express-async-handler';
-
-import { userSignin } from "../controllers/user.controller.js";
-
-export const userRouter = express.Router();
-
-userRouter.post('/signin', asyncHandler(userSignin));
+export default router;
