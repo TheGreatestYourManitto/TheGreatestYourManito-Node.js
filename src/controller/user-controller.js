@@ -1,4 +1,4 @@
-import { responseStatus, baseResponse, StatusCodes } from '../../common/index.js';
+import { responseStatus, baseResponse, ConstantResponseStatus } from '../../common/index.js';
 import { throwError } from '../../common/error-helper.js';
 import { createUser } from '../service/user-service.js';
 import { UserSchema } from '../dto/user-dto.js';
@@ -18,6 +18,6 @@ export const UserController = {
         // 서비스에서 유저 생성 로직 처리
         const userIdentifier = await createUser(nickname, deviceId);
 
-        return res.status(201).json(baseResponse(responseStatus.CREATED, { userIdentifier }));
+        return res.status(201).json(baseResponse(ConstantResponseStatus.CREATED, { "userIdentifier": userIdentifier }));
     })
 };

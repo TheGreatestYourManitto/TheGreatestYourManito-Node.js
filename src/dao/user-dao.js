@@ -1,13 +1,25 @@
 import { executeQuery } from '../../common/db-helper.js';
 
 /**
+ * 기기 ID의 중복 여부를 확인하는 함수
+ * 
+ * @param {string} deviceId - 중복 여부를 확인할 기기 ID
+ * @returns {boolean} - 중복된 기기 ID가 있으면 true, 없으면 false
+ */
+export const isDeviceIdExists = async (deviceId) => {
+    const query = 'SELECT COUNT(*) as count FROM user WHERE device_id = ?';
+    const result = await executeQuery(query, [deviceId]);
+    return result[0].count > 0;
+};
+
+/**
  * 유저 코드의 중복 여부를 확인하는 함수
  * 
  * @param {string} userCode - 중복 여부를 확인할 유저 코드
  * @returns {boolean} - 중복된 유저 코드가 있으면 true, 없으면 false
  */
 export const isUserCodeExists = async (userCode) => {
-    const query = 'SELECT COUNT(*) as count FROM users WHERE code = ?';
+    const query = 'SELECT COUNT(*) as count FROM user WHERE code = ?';
     const result = await executeQuery(query, [userCode]);
     return result[0].count > 0;
 };
@@ -22,7 +34,7 @@ export const isUserCodeExists = async (userCode) => {
  * @returns {number} - 저장된 유저의 ID
  */
 export const insertUser = async (userData) => {
-    const query = 'INSERT INTO users (nickname, device_id, code) VALUES (?, ?, ?)';
+    const query = 'INSERT INTO user (nickname, device_id, code) VALUES (?, ?, ?)';
     const result = await executeQuery(query, [userData.nickname, userData.deviceId, userData.userCode]);
     return result.insertId;
 };

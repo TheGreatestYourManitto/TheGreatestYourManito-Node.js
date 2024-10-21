@@ -13,12 +13,12 @@ export const UserSchema = {
                 'any.required': 'nickname이 비어있습니다.',
             }),
 
-        // deviceId: 필수, 최대 7자 이하
+        // deviceId: 필수, 최대 36자 이하
         deviceId: Joi.string()
-            .max(7)
+            .max(36)
             .required()
             .messages({
-                'string.max': 'deviceId는 최대 7자 이하만 가능합니다.',
+                'string.max': 'deviceId는 최대 36자 이하만 가능합니다.',
                 'any.required': 'deviceId가 비어있습니다.',
             })
     })
