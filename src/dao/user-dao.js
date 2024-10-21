@@ -1,7 +1,5 @@
-import { dbPool } from '../config/db-config.js';
-import { BaseError } from '../../common/base-error.js';
-import { responseStatus } from '../../common/response-status.js';
-import { StatusCodes } from 'http-status-codes';
+import { dbPool } from '../../common/config/db-config.js';
+import { BaseError, responseStatus, StatusCodes } from '../../common/index.js';
 
 /**
  * 유저 코드의 중복 여부를 확인하는 함수

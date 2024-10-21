@@ -1,7 +1,5 @@
+import { BaseError, responseStatus, StatusCodes } from '../../common/index.js';
 import { insertUser, isUserCodeExists } from '../dao/user-dao.js';
-import { BaseError } from '../../common/base-error.js';
-import { responseStatus } from '../../common/response-status.js';
-import { StatusCodes } from 'http-status-codes';
 
 /**
  * 7자리 랜덤 코드를 생성하는 함수

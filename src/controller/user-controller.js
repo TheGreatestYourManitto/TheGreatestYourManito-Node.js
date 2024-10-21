@@ -1,14 +1,11 @@
-import { StatusCodes } from 'http-status-codes';
-import { responseStatus } from '../../common/response-status.js';
-import { baseResponse } from '../../common/base-response.js';
-import { BaseError } from '../../common/base-error.js';
+import { BaseError, responseStatus, baseResponse, StatusCodes } from '../../common/index.js';
 import { createUser } from '../service/user-service.js';
-import { postUserDto } from '../dto/user-dto.js';
+import { UserSchema } from '../dto/user-dto.js';
 import asyncHandler from 'express-async-handler';
 
 export const UserController = {
     postUser: asyncHandler(async (req, res) => {
-        const { error, value } = postUserDto.validate(req.body);  // Joi 스키마를 사용한 유효성 검사
+        const { error, value } = UserSchema.postUserDto.validate(req.body);  // Joi 스키마를 사용한 유효성 검사
 
         if (error) { // 유효성 검사 에러 발생 시
             throw new BaseError(responseStatus(StatusCodes.BAD_REQUEST, error.details[0].message));

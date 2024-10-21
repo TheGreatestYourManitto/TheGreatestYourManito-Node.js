@@ -1,8 +1,5 @@
 import express from 'express';
-import { BaseError } from './common/base-error.js';
-import { responseStatus } from './common/response-status.js';
-import { baseResponse } from './common/base-response.js';
-import { StatusCodes } from 'http-status-codes';
+import { BaseError, responseStatus, baseResponse, StatusCodes } from './common/index.js';
 import dotenv from 'dotenv';
 import { specs } from './common/config/swagger-config.js';
 import SwaggerUi from 'swagger-ui-express';
