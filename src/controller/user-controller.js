@@ -1,7 +1,7 @@
 import { responseStatus } from '../../common/response-status.js';
-import { getTempData } from '../service/temp-service.js';
+import { getTempData } from '../service/user-service.js';
 import { baseResponse } from '../../common/base-response.js';
-import { checkFlag } from '../service/temp-service.js';
+import { checkFlag } from '../service/user-service.js';
 
 export const tempTest = (req, res, next) => {
     res.send(response(responseStatus.SUCCESS, getTempData()));

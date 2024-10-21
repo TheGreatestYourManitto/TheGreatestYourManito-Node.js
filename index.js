@@ -1,5 +1,4 @@
 import express from 'express';
-import { tempRouter } from './src/router/temp-route.js';
 import { BaseError } from './common/base-error.js';
 import { responseStatus } from './common/response-status.js';
 import dotenv from 'dotenv';
@@ -16,9 +15,6 @@ app.use(express.urlencoded({ extended: false })); // 단순 객체 문자열 형
 
 // swagger
 app.use('/api-docs', SwaggerUi.serve, SwaggerUi.setup(specs));
-
-// router setting
-app.use('/temp', tempRouter);
 
 // error handling
 app.use((req, res, next) => {
