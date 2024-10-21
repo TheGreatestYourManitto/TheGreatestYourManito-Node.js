@@ -1,5 +1,7 @@
+import { StatusCodes } from 'http-status-codes';
 import { responseStatus } from '../../common/response-status.js';
 import { baseResponse } from '../../common/base-response.js';
+import { BaseError } from '../../common/base-error.js';
 import { createUser } from '../service/user-service.js';
 import { postUserDto } from '../dto/user-dto.js';
 import asyncHandler from 'express-async-handler';
@@ -20,4 +22,4 @@ export const UserController = {
 
         return res.status(201).json(baseResponse(responseStatus.CREATED, { userIdentifier }));
     })
-}
+};

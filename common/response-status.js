@@ -1,3 +1,5 @@
+import { StatusCodes } from "http-status-codes";
+
 /**
  * 서버의 응답 상태를 표준화하는 함수.
  * 

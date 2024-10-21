@@ -22,4 +22,4 @@ export const UserSchema = {
                 'any.required': 'deviceId가 비어있습니다.',
             })
     })
-}
+};
