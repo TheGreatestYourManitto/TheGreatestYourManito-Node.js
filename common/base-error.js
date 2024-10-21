@@ -3,4 +3,4 @@ export class BaseError extends Error {
         super(data.message);
         this.data = data;
     }
-};
+}
