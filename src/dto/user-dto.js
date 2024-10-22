@@ -1,6 +1,6 @@
 import Joi from 'joi';
 
-const UserProperty = {
+export const UserProperty = {
     // nickname: 필수, 한글 또는 영문만 허용, 최대 7자 이하
     nickname: Joi.string()
         .pattern(/^[a-zA-Z가-힣]+$/)  // 정규 표현식으로 한글 또는 영문만 허용
@@ -19,6 +19,15 @@ const UserProperty = {
         .messages({
             'string.max': 'deviceId는 최대 36자 이하만 가능합니다.',
             'any.required': 'deviceId가 비어있습니다.',
+        }),
+
+    // code: userCode: 필수, 최대 8자 이하
+    userCode: Joi.string()
+        .max(8)
+        .required()
+        .messages({
+            'string.max': 'userCode는 최대 8자 이하만 가능합니다.',
+            'any.required': 'userCode가 비어있습니다.',
         })
 };
 
@@ -29,5 +38,6 @@ export const UserSchema = {
     }),
     postIdentifyUserDto: Joi.object({
         deviceId: UserProperty.deviceId
-    })
+    }),
+
 };
