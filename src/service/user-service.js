@@ -1,6 +1,6 @@
 import { StatusCodes } from '../../common/index.js';
-import { throwError } from '../../common/error-helper.js';
-import { insertUser, isUserCodeExists, isDeviceIdExists } from '../dao/user-dao.js';
+import { throwError } from '../../common/response-helper.js';
+import { isUserCodeExists, insertUser, selectUser } from '../dao/user-dao.js';
 
 /**
  * 7자리 랜덤 코드를 생성하는 함수
@@ -24,12 +24,6 @@ const generateRandomCode = () => {
  * @throws {BaseError} - 일정 횟수 이후에도 유저 코드를 생성하지 못할 경우 에러 발생
  */
 export const createUser = async (nickname, deviceId) => {
-    // 기기 코드 중복 확인
-    const deviceExists = await isDeviceIdExists(deviceId);
-    if (deviceExists) {
-        throwError(StatusCodes.CONFLICT, '해당 기기 ID로 이미 등록된 유저가 있습니다.');
-    }
-
     let randomCode;
     const maxAttempts = 10;  // 중복 검사 시 최대 시도 횟수
     let attempt = 0;
@@ -53,3 +47,16 @@ export const createUser = async (nickname, deviceId) => {
 
     return randomCode;  // 생성된 유저 코드 반환
 };
+
+/**
+ * 유저 정보를 조회하는 함수
+ * 
+ * 주어진 deviceId를 사용하여 유저 정보를 DB에서 조회합니다.
+ * 
+ * @param {string} deviceId - 조회할 유저의 기기 ID
+ * @returns {Promise<Object>} - 조회된 유저 정보 객체
+ * @throws {BaseError} - 유저 정보 조회 중 에러가 발생하면 에러를 던집니다.
+ */
+export const searchUser = async (deviceId) => {
+    return await selectUser(deviceId);
+}

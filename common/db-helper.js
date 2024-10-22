@@ -1,5 +1,5 @@
 import { StatusCodes } from "http-status-codes";
-import { throwError } from './error-helper.js';
+import { throwError } from './response-helper.js';
 import { dbPool } from "./config/db-config.js";
 
 /**
@@ -31,10 +31,15 @@ import { dbPool } from "./config/db-config.js";
  */
 export const executeQuery = async (query, params = []) => {
     try {
-        const [rows] = await dbPool.execute(query, params);
-        return rows;
+        const [result] = await dbPool.execute(query, params);
+        return result;
     } catch (err) {
-        console.error("DB 작업 중 에러 발생:", err);
-        throwError(StatusCodes.INTERNAL_SERVER_ERROR, 'DB 작업 중 에러가 발생했습니다. query: ' + query);
+        if (err.code === 'ER_DUP_ENTRY') {
+            // UNIQUE 제약 조건 위반 시 에러
+            throw new BaseError(responseStatus(StatusCodes.CONFLICT, '이미 DB에 존재하는 중복된 값이 있습니다.'));
+        } else {
+            console.error("DB 작업 중 에러 발생:", err);
+            throwError(StatusCodes.INTERNAL_SERVER_ERROR, 'DB 작업 중 에러가 발생했습니다.');
+        }
     }
 };
