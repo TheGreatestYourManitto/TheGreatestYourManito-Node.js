@@ -27,7 +27,7 @@ export const UserSchema = {
         nickname: UserProperty.nickname,
         deviceId: UserProperty.deviceId
     }),
-    getUserDto: Joi.object({
+    postIdentifyUserDto: Joi.object({
         deviceId: UserProperty.deviceId
     })
 };
