@@ -1,5 +1,6 @@
 import express from 'express';
-import { BaseError, responseStatus, baseResponse, StatusCodes } from './common/index.js';
+import { BaseError, responseStatus, baseResponse, StatusCodes, ConstantResponseStatus } from './common/index.js';
+import { sendResponse } from './common/response-helper.js';
 import dotenv from 'dotenv';
 import { specs } from './common/config/swagger-config.js';
 import SwaggerUi from 'swagger-ui-express';
@@ -35,10 +36,9 @@ app.use((err, req, res, next) => {
 
     // 에러 객체가 BaseError인지 확인하여 적절한 응답 반환
     if (err instanceof BaseError) {
-        res.status(err.data.code).json(baseResponse(err.data));  // baseResponse 사용
-    } else {
-        // 예상치 못한 에러 처리
-        res.status(500).json(baseResponse(responseStatus(StatusCodes.INTERNAL_SERVER_ERROR, '서버 내부 오류가 발생했습니다.')));
+        sendResponse(res, err.data);
+    } else { // 예상치 못한 에러 처리
+        sendResponse(res, ConstantResponseStatus.INTERNAL_SERVER_ERROR);
     }
 });
 
