@@ -23,10 +23,13 @@ export const throwError = (statusCode, message) => {
  * @returns {Object} - 표준화된 응답을 클라이언트에게 전송합니다.
  */
 export const sendResponse = (res, responseStatus, result = null) => {
-    return res.status(responseStatus.code).json({
+    const response = {
         isSuccess: responseStatus.isSuccess,
         code: responseStatus.code,
         message: responseStatus.message,
-        result: result,
-    });
+    };
+
+    if (result !== null) { response.result = result; } // result가 null이 아닌 경우에만 응답 객체에 추가
+
+    return res.status(responseStatus.code).json(response);
 };
