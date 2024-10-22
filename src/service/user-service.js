@@ -1,15 +1,5 @@
-import { StatusCodes } from '../../common/index.js';
-import { throwError } from '../../common/response-helper.js';
+import { generateUniqueRandomCode } from '../../common/code-generator.js';
 import { isUserCodeExists, insertUser, selectUser } from '../dao/user-dao.js';
-
-/**
- * 7자리 랜덤 코드를 생성하는 함수
- * 
- * @returns {string} - 생성된 7자리 랜덤 코드 (대소문자+숫자)
- */
-const generateRandomCode = () => {
-    return Math.random().toString(36).substring(2, 9);
-};
 
 /**
  * 유저를 생성하는 함수
@@ -24,27 +14,8 @@ const generateRandomCode = () => {
  * @throws {BaseError} - 일정 횟수 이후에도 유저 코드를 생성하지 못할 경우 에러 발생
  */
 export const createUser = async (nickname, deviceId) => {
-    let randomCode;
-    const maxAttempts = 10;  // 중복 검사 시 최대 시도 횟수
-    let attempt = 0;
-
-    // 중복되지 않는 유저 코드 생성 및 검증
-    while (attempt < maxAttempts) {
-        randomCode = "U" + generateRandomCode();
-
-        // DB에서 해당 코드가 이미 존재하는지 확인
-        const isExists = await isUserCodeExists(randomCode);
-        if (!isExists) { break; }
-        attempt++;
-    }
-
-    if (attempt === maxAttempts) {
-        throwError(StatusCodes.INTERNAL_SERVER_ERROR, '유저 코드를 생성할 수 없습니다.');
-    }
-
-    // DAO에 유저 저장
+    const randomCode = await generateUniqueRandomCode("U", isUserCodeExists);
     await insertUser({ nickname, deviceId, userCode: randomCode });
-
     return randomCode;  // 생성된 유저 코드 반환
 };
 

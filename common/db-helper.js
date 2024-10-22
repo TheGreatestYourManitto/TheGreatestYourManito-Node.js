@@ -36,7 +36,7 @@ export const executeQuery = async (query, params = []) => {
     } catch (err) {
         if (err.code === 'ER_DUP_ENTRY') {
             // UNIQUE 제약 조건 위반 시 에러
-            throw new BaseError(responseStatus(StatusCodes.CONFLICT, '이미 DB에 존재하는 중복된 값이 있습니다.'));
+            throwError(StatusCodes.CONFLICT, '이미 DB에 존재하는 중복된 값이 있습니다.');
         } else {
             console.error("DB 작업 중 에러 발생:", err);
             throwError(StatusCodes.INTERNAL_SERVER_ERROR, 'DB 작업 중 에러가 발생했습니다.');
