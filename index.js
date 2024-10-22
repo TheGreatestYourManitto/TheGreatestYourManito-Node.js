@@ -1,11 +1,12 @@
 import express from 'express';
-import { BaseError, responseStatus, baseResponse, StatusCodes, ConstantResponseStatus } from './common/index.js';
+import { BaseError, responseStatus, StatusCodes, ConstantResponseStatus } from './common/index.js';
 import { sendResponse } from './common/response-helper.js';
 import dotenv from 'dotenv';
 import { specs } from './common/config/swagger-config.js';
 import SwaggerUi from 'swagger-ui-express';
 
 import userRouter from './src/router/user-router.js';
+import roomRouter from './src/router/room-router.js';
 
 dotenv.config();
 
@@ -23,6 +24,8 @@ app.use('/api-docs', SwaggerUi.serve, SwaggerUi.setup(specs));
 
 // 유저 라우터 설정
 app.use('/user', userRouter);
+// 방 라우터 설정
+app.use('/room', roomRouter);
 
 // 지원되지 않는 URI 처리 미들웨어
 app.use((req, res, next) => {

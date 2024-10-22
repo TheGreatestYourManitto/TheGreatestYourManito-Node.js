@@ -9,14 +9,14 @@ export const UserController = {
         const { error, value } = UserSchema.postUserDto.validate(req.body);  // Joi 스키마를 사용한 유효성 검사
         if (error) { throwError(StatusCodes.BAD_REQUEST, error.details[0].message); } // 유효성 검사 에러 발생 시
         const { nickname, deviceId } = value; // Joi 검증을 통과한 유효한 데이터 추출
-        const userIdentifier = await createUser(nickname, deviceId); // 서비스에서 유저 생성 로직 처리
-        return sendResponse(res, ConstantResponseStatus.CREATED, { "userIdentifier": userIdentifier });
+        const userCode = await createUser(nickname, deviceId); // 서비스에서 유저 생성 로직 처리
+        return sendResponse(res, ConstantResponseStatus.CREATED, { "userCode": userCode });
     }),
     postIdentifyUser: asyncHandler(async (req, res) => {
         const { error, value } = UserSchema.postIdentifyUserDto.validate(req.body);
         if (error) { throwError(StatusCodes.BAD_REQUEST, error.details[0].message); }
         const { deviceId } = value;
-        const userIdentifier = await searchUser(deviceId);
-        return sendResponse(res, ConstantResponseStatus.SUCCESS, { "userIdentifier": userIdentifier });
+        const userCode = await searchUser(deviceId);
+        return sendResponse(res, ConstantResponseStatus.SUCCESS, { "userCode": userCode });
     })
 };
