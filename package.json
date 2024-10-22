@@ -6,7 +6,10 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon --exec babel-node index.js"
+    "start": "node index.js",
+    "start-dev": "nodemon --exec babel-node index.js",
+    "build": "babel src -d dist",
+    "deploy": "yarn build && gcloud app deploy"
   },
   "author": "",
   "license": "ISC",
