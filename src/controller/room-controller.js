@@ -13,7 +13,7 @@ export const RoomController = {
         return sendResponse(res, ConstantResponseStatus.SUCCESS, { "rooms": roomList });
     }),
     postRoom: asyncHandler(async (req, res) => {
-        const { error, value } = RoomSchema
+        const { error, value } = RoomSchema.postRoomDto.validate({ userCode: req.get('userCode'), roomName: req.body.roomName, endDate: req.body.endDate });
         if (error) { throwError(StatusCodes.BAD_REQUEST, error.details[0].message); }
         const { userCode, roomName, endDate } = value;
         const invitationCode = await createRoom(userCode, roomName, endDate);

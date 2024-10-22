@@ -1,5 +1,5 @@
 import { StatusCodes } from "http-status-codes";
-import { throwError } from "./response-helper";
+import { throwError } from "./response-helper.js";
 
 /**
  * 7자리 랜덤 코드를 생성하는 함수
