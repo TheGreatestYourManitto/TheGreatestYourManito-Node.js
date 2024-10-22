@@ -1,18 +1,6 @@
 import { executeQuery } from '../../common/db-helper.js';
 
 /**
- * 기기 ID의 중복 여부를 확인하는 함수
- * 
- * @param {string} deviceId - 중복 여부를 확인할 기기 ID
- * @returns {boolean} - 중복된 기기 ID가 있으면 true, 없으면 false
- */
-export const isDeviceIdExists = async (deviceId) => {
-    const query = 'SELECT COUNT(*) as count FROM user WHERE device_id = ?';
-    const result = await executeQuery(query, [deviceId]);
-    return result[0].count > 0;
-};
-
-/**
  * 유저 코드의 중복 여부를 확인하는 함수
  * 
  * @param {string} userCode - 중복 여부를 확인할 유저 코드

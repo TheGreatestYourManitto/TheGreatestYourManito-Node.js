@@ -1,6 +1,6 @@
 import { StatusCodes } from '../../common/index.js';
 import { throwError } from '../../common/error-helper.js';
-import { insertUser, isUserCodeExists, isDeviceIdExists } from '../dao/user-dao.js';
+import { insertUser, isUserCodeExists } from '../dao/user-dao.js';
 
 /**
  * 7자리 랜덤 코드를 생성하는 함수
@@ -24,12 +24,6 @@ const generateRandomCode = () => {
  * @throws {BaseError} - 일정 횟수 이후에도 유저 코드를 생성하지 못할 경우 에러 발생
  */
 export const createUser = async (nickname, deviceId) => {
-    // 기기 코드 중복 확인
-    const deviceExists = await isDeviceIdExists(deviceId);
-    if (deviceExists) {
-        throwError(StatusCodes.CONFLICT, '해당 기기 ID로 이미 등록된 유저가 있습니다.');
-    }
-
     let randomCode;
     const maxAttempts = 10;  // 중복 검사 시 최대 시도 횟수
     let attempt = 0;
