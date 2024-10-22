@@ -1,5 +1,5 @@
 import { StatusCodes } from "http-status-codes";
-import { throwError } from './error-helper.js';
+import { throwError } from './response-helper.js';
 import { dbPool } from "./config/db-config.js";
 
 /**
