@@ -20,6 +20,12 @@ export const selectUserIdByCode = async (userCode) => {
     return result[0].id;  // 유저 ID 반환
 };
 
+export const isRoomCodeExists = async (roomCode) => {
+    const query = 'SELECT COUNT(*) as count FROM room WHERE invitation_code = ?';
+    const result = await executeQuery(query, [roomCode]);
+    return result[0].count > 0;
+}
+
 /**
  * 특정 유저가 관리자이거나 참여한 방을 조회하는 함수
  * @param {number} userId - 유저 ID
