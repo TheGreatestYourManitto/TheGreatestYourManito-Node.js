@@ -20,7 +20,7 @@ const UserProperty = {
             'string.max': 'deviceId는 최대 36자 이하만 가능합니다.',
             'any.required': 'deviceId가 비어있습니다.',
         })
-}
+};
 
 export const UserSchema = {
     postUserDto: Joi.object({
