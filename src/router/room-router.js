@@ -5,6 +5,7 @@ const router = express.Router();
 
 // 방 체크 API
 router.get('/', RoomController.getRoom);
-
+// 방 생성 API
+router.post('/', RoomController);
 
 export default router;

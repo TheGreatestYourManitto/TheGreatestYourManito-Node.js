@@ -35,3 +35,9 @@ export const selectRoom = async (userId) => {
     const result = await executeQuery(query, [userId, userId]);
     return result;
 };
+
+export const insertRoom = async (roomData) => {
+    const query = 'INSERT INTO room (admin_user_id, invitation_code, room_name, end_date) VALUES (?, ?, ?)'
+    const result = await executeQuery(query, [roomData.userId, roomData.roomCode, roomData.roomName, roomData.endDate]);
+    return result.insertId;
+}
