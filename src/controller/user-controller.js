@@ -13,7 +13,8 @@ export const UserController = {
         return sendResponse(res, ConstantResponseStatus.CREATED, { "userIdentifier": userIdentifier });
     }),
     getUser: asyncHandler(async (req, res) => {
-        // value는 스키마 유효성 검사에서 가져옵니다.
+        const { error, value } = UserSchema.getUserDto.validate(req.body);
+        if (error) { throwError(StatusCodes.BAD_REQUEST, error.details[0].message); }
         const { deviceId } = value;
         const userIdentifier = await getUser(deviceId);
         return sendResponse(res, ConstantResponseStatus.OK, { "userIdentifier": userIdentifier });
