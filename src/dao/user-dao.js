@@ -26,3 +26,18 @@ export const insertUser = async (userData) => {
     const result = await executeQuery(query, [userData.nickname, userData.deviceId, userData.userCode]);
     return result.insertId;
 };
+
+/**
+ * deviceId를 사용하여 유저 정보를 조회하는 함수
+ * 
+ * 주어진 deviceId를 기반으로 user 테이블에서 해당 유저의 정보를 조회합니다.
+ * 
+ * @param {string} deviceId - 조회할 유저의 기기 ID
+ * @returns {Promise<Object[]>} - 조회된 유저 정보의 배열
+ * @throws {BaseError} - DB 작업 중 에러가 발생하면 에러를 던집니다.
+ */
+export const selectUser = async deviceId => {
+    const query = 'SELECT * FROM user WHERE device_id = ?';
+    const result = await executeQuery(query, [deviceId]);
+    return result;
+};

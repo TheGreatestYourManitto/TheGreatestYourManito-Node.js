@@ -16,7 +16,7 @@ export const UserController = {
         const { error, value } = UserSchema.getUserDto.validate(req.body);
         if (error) { throwError(StatusCodes.BAD_REQUEST, error.details[0].message); }
         const { deviceId } = value;
-        const userIdentifier = await getUser(deviceId);
+        const userIdentifier = await searchUser(deviceId);
         return sendResponse(res, ConstantResponseStatus.OK, { "userIdentifier": userIdentifier });
     })
 };
