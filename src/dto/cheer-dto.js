@@ -7,7 +7,6 @@ export const CheerProperty = {
         .messages({
             'any.required': 'cheerType이 비어있습니다.',
         })
-
 }
 
 export const CheerSchema = {
