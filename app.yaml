@@ -1,0 +1,14 @@
+runtime: nodejs20 # Node.js 버전
+
+env: standard # App Engine의 Standard 환경 사용
+
+# 이 설정은 모든 URL 경로를 Node.js 애플리케이션으로 라우팅합니다.
+handlers:
+  - url: /.*
+    script: auto
+
+# 자동 확장 설정
+automatic_scaling:
+  target_cpu_utilization: 0.65
+  min_instances: 1
+  max_instances: 5

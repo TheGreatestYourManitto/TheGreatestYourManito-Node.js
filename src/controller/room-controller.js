@@ -10,7 +10,12 @@ export const RoomController = {
         if (error) { throwError(StatusCodes.BAD_REQUEST, error.details[0].message); }
         const { userCode } = value;
         const roomList = await searchRoom(userCode);
-        return sendResponse(res, ConstantResponseStatus.SUCCESS, { "rooms": roomList });
+        const filteredRooms = roomList.map(room => ({
+            roomId: room.id,
+            roomName: room.room_name,
+            endDate: room.end_date
+        }));
+        return sendResponse(res, ConstantResponseStatus.SUCCESS, { "rooms": filteredRooms });
     }),
     postRoom: asyncHandler(async (req, res) => {
         const { error, value } = RoomSchema.postRoomDto.validate({ userCode: req.get('userCode'), roomName: req.body.roomName, endDate: req.body.endDate });
