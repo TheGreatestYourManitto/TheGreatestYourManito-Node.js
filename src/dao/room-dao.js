@@ -2,6 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 import { executeQuery } from '../../common/db-helper.js';
 import { throwError } from '../../common/response-helper.js';
 import { exceptions } from 'winston';
+import { insertUserRoomSetting } from './user-room-setting-dao.js';
 
 
 /**
@@ -80,7 +81,7 @@ export const insertRoom = async (roomData) => {
     // 생성된 방의 room_id와 user_id로 마니또 테이블에 추가
     const insertQuery = 'INSERT INTO manitto (room_id, user_id) VALUES (?, ?)';
     await executeQuery(insertQuery, [result.insertId, roomData.userId]);
-
+    await insertUserRoomSetting({ userId: roomData.userId, roomId: result.insertId, isDeleted: false });
     return result.insertId; // 생성된 방 ID 반환
 }
 
@@ -183,6 +184,7 @@ export const selectRoomIdByCode = async (invitationCode) => {
 export const insertManitto = async (manittoData) => {
     const query = 'INSERT INTO manitto (room_id, user_id) VALUES (?, ?)';
     const result = await executeQuery(query, [manittoData.roomId, manittoData.userId]);
+    await insertUserRoomSetting({ userId: manittoData.userId, roomId: manittoData.roomId, isDeleted: false });
     return result.insertId;
 }
 
