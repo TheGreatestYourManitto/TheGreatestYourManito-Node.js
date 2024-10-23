@@ -350,3 +350,45 @@ export const selectManittoId = async ({ manittoUserId, roomId }) => {
     if (result.length === 0) { throwError(StatusCodes.NOT_FOUND, '해당 유저의 마니또 정보를 찾을 수 없습니다.'); }
     return result[0].id;  // manitto 관계의 id 반환
 }
+
+/**
+ * manitto와 연결된 cheer 메시지를 타입별로 카운트하는 함수
+ * @param {Object} data - manitto 정보
+ * @param {number} data.manittoId - manitto 관계 ID
+ * @returns {Promise<Object>} - 타입별 응원 메시지 개수
+ */
+export const countCheerByType = async ({ manittoId }) => {
+    const query = `
+        SELECT cheer_type.type_name, COUNT(cheer.id) AS count
+        FROM cheer_type
+        LEFT JOIN cheer ON cheer.cheer_type_id = cheer_type.id AND cheer.manitto_relation_id = ?
+        GROUP BY cheer_type.type_name;
+    `;
+    const result = await executeQuery(query, [manittoId]);
+    return result.reduce((acc, row) => {
+        acc[row.type_name] = row.count;
+        return acc;
+    }, {});
+}
+
+/**
+ * roomId에 연결된 모든 manitto 관계와 그들의 cheer 내역을 가져오는 함수
+ * @param {number} roomId - 방 ID
+ * @returns {Promise<Array>} - manitto 관계와 응원 메시지 내역을 내림차순으로 정렬하여 반환
+ */
+export const getRoomManittoCheerSummary = async (roomId) => {
+    const query = `
+        SELECT m.user_id, u1.nickname AS userName, 
+               m.manitto_user_id, u2.nickname AS manittoUserName,
+               COUNT(c.id) AS cheer_count
+        FROM manitto m
+        LEFT JOIN user u1 ON m.user_id = u1.id
+        LEFT JOIN user u2 ON m.manitto_user_id = u2.id
+        LEFT JOIN cheer c ON c.manitto_relation_id = m.id
+        WHERE m.room_id = ?
+        GROUP BY m.user_id, m.manitto_user_id, u1.nickname, u2.nickname
+        ORDER BY cheer_count DESC;
+    `;
+    const result = await executeQuery(query, [roomId]);
+    return result;
+}
