@@ -148,3 +148,21 @@ export const selectRoomInfo = async (roomData) => {
         }))  // 유저 목록
     };
 }
+
+export const selectRoomIdByCode = async (invitationCode) => {
+    const query = 'SELECT id FROM room WHERE invitation_code = ?';
+    const result = await executeQuery(query, [invitationCode]);
+
+    // 방이 없을 경우 에러 처리
+    if (result.length === 0) {
+        throwError(StatusCodes.NOT_FOUND, '해당 방을 찾을 수 없습니다.');
+    }
+
+    return result[0].id;  // 방 ID 반환
+}
+
+export const insertManitto = async (manittoData) => {
+    const query = 'INSERT INTO manitto (room_id, user_id) VALUES (?, ?)';
+    const result = await executeQuery(query, [manittoData.roomId, manittoData.userId]);
+    return result.insertId;
+}

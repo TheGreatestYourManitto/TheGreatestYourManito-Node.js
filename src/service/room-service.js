@@ -1,5 +1,5 @@
 import { generateUniqueRandomCode } from '../../common/code-generator.js';
-import { insertRoom, isRoomCodeExists, selectRoom, selectRoomInfo, selectUserIdByCode } from '../dao/room-dao.js';
+import { insertManitto, insertRoom, isRoomCodeExists, selectRoom, selectRoomIdByCode, selectRoomInfo, selectUserIdByCode } from '../dao/room-dao.js';
 
 /**
  * 유저 코드로 방 정보를 검색하는 함수
@@ -66,4 +66,11 @@ export const searchRoomInfo = async (userCode, roomId) => {
     const userId = await selectUserIdByCode(userCode);
     const roomInfo = await selectRoomInfo({ userId, roomId });
     return roomInfo;
+}
+
+export const participateRoom = async (userCode, invitationCode) => {
+    const userId = await selectUserIdByCode(userCode);
+    const roomId = await selectRoomIdByCode(invitationCode);
+    const manittoId = await insertManitto({ userId, roomId });
+    return manittoId; // 생성된 마니또 관계 (방-유저) 반환
 }
