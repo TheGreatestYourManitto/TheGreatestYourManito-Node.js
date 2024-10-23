@@ -209,10 +209,10 @@ export const checkRoomAdmin = async (adminData) => {
 }
 
 /**
- * 방 멤버를 비활성화(삭제) 처리하는 함수
+ * 방 멤버를 삭제하는 함수
  * 
  * 주어진 방 ID(roomId)와 유저 ID(userId)를 사용하여,
- * 해당 유저를 방에서 비활성화 처리합니다.
+ * 해당 유저를 방에서 삭제합니다.
  * 멤버가 존재하지 않을 경우, 404 에러를 발생시킵니다.
  * 
  * @param {Object} memberData - 멤버 삭제에 필요한 데이터
@@ -223,8 +223,7 @@ export const checkRoomAdmin = async (adminData) => {
  */
 export const deletePatchRoomMember = async (memberData) => {
     const query = `
-        UPDATE manitto
-        SET activated = false
+        DELETE FROM manitto
         WHERE room_id = ? AND user_id = ?;
     `;
     const result = await executeQuery(query, [memberData.roomId, memberData.userId]);
