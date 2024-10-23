@@ -295,3 +295,15 @@ export const updateManittoUserId = async ({ roomId, userId, manittoUserId }) => 
     if (result.affectedRows === 0) { throwError(StatusCodes.NOT_FOUND, '매칭된 유저 정보를 업데이트하지 못했습니다.'); }
     return result;
 }
+
+export const selectManittoInfo = async ({ userId, roomId }) => {
+    const query = `        
+        SELECT user.id, user.nickname
+        FROM manitto
+        JOIN user ON manitto.manitto_user_id = user.id
+        WHERE manitto.room_id = ? AND manitto.user_id = ?;
+    `;
+    const result = await executeQuery(query, [roomId, userId]);
+    if (result.length === 0) { throwError(StatusCodes.NOT_FOUND, '해당 유저의 마니또 정보를 찾을 수 없습니다.'); }
+    return result[0];  // user.id와 user.nickname 반환
+}

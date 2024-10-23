@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 import { generateUniqueRandomCode } from '../../common/code-generator.js';
 import { throwError } from '../../common/response-helper.js';
-import { checkRoomAdmin, deleteRoomMember, insertManitto, insertRoom, isRoomCodeExists, selectRoom, selectRoomIdByCode, selectRoomInfo, selectUserIdByCode, selectUserIdFromManitto, updateManittoUserId, updateRoomStatus } from '../dao/room-dao.js';
+import { checkRoomAdmin, deleteRoomMember, insertManitto, insertRoom, isRoomCodeExists, selectManittoInfo, selectRoom, selectRoomIdByCode, selectRoomInfo, selectUserIdByCode, selectUserIdFromManitto, updateManittoUserId, updateRoomStatus } from '../dao/room-dao.js';
 import { shuffleArray } from '../../common/utils.js';
 
 /**
@@ -158,4 +158,10 @@ const startManittoProcess = async (roomId) => {
     }));
 
     return manittoResult;
+}
+
+export const searchManitto = async (userCode, roomId) => {
+    const userId = await selectUserIdByCode(userCode);
+    const user = await selectManittoInfo({ userId, roomId });
+    return user;
 }

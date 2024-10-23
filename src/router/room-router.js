@@ -15,5 +15,7 @@ router.post('/participate', RoomController.postRoomParticipate);
 router.delete('/:roomId/member/:userId', RoomController.deleteRoomMember);
 // 방 상태 확정 patch API
 router.patch('/:roomId', RoomController.patchRoomStatus);
+// 방의 마니또 상대 확인 get API
+router.get('/:roomId/receiver', RoomController.getManittoReceiver);
 
 export default router;
