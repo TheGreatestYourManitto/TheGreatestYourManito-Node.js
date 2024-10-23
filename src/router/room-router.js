@@ -12,6 +12,6 @@ router.get('/:roomId', RoomController.getRoomInfo);
 // 방 참여 post API
 router.post('/participate', RoomController.postRoomParticipate);
 // 방 멤버 삭제 delete API
-router.delete('/:roomId/member/:memberId', RoomController.deleteRoomMember);
+router.delete('/:roomId/member/:userId', RoomController.deleteRoomMember);
 
 export default router;
