@@ -72,5 +72,10 @@ export const RoomSchema = {
     postRoomParticipateDto: Joi.object({
         userCode: UserProperty.userCode,
         invitationCode: RoomProperty.invitationCode
+    }),
+    deleteRoomMemberDto: Joi.object({
+        userCode: UserProperty.userCode,
+        roomId: RoomProperty.roomId,
+        userId: UserProperty.userId
     })
 };

@@ -184,3 +184,50 @@ export const insertManitto = async (manittoData) => {
     const result = await executeQuery(query, [manittoData.roomId, manittoData.userId]);
     return result.insertId;
 }
+
+/**
+ * 방장이 맞는지 확인하는 함수
+ * 
+ * 주어진 방 ID(roomId)와 유저 ID(userId)를 통해,
+ * 해당 유저가 해당 방의 관리자(방장)인지 확인합니다.
+ * 방장이 아닌 경우 403 에러를 발생시킵니다.
+ * 
+ * @param {Object} adminData - 관리자 확인에 필요한 데이터
+ * @param {number} adminData.roomId - 방 ID
+ * @param {number} adminData.userId - 유저 ID
+ * @returns {Promise<void>} - 방장이 아닌 경우 에러 발생
+ * @throws {BaseError} - 방장이 아닌 경우 에러 발생
+ */
+export const checkRoomAdmin = async (adminData) => {
+    const query = `
+        SELECT COUNT(*) as count
+        FROM room
+        WHERE id = ? AND admin_user_id = ?;
+    `;
+    const checkResult = await executeQuery(query, [adminData.roomId, adminData.userId]);
+    if (checkResult[0].count === 0) { throwError(StatusCodes.FORBIDDEN, '해당 유저는 이 방의 방장이 아닙니다.'); }
+}
+
+/**
+ * 방 멤버를 비활성화(삭제) 처리하는 함수
+ * 
+ * 주어진 방 ID(roomId)와 유저 ID(userId)를 사용하여,
+ * 해당 유저를 방에서 비활성화 처리합니다.
+ * 멤버가 존재하지 않을 경우, 404 에러를 발생시킵니다.
+ * 
+ * @param {Object} memberData - 멤버 삭제에 필요한 데이터
+ * @param {number} memberData.roomId - 방 ID
+ * @param {number} memberData.userId - 삭제할 유저의 ID
+ * @returns {Promise<Object>} - 삭제 결과
+ * @throws {BaseError} - 멤버가 존재하지 않을 경우 에러 발생
+ */
+export const deletePatchRoomMember = async (memberData) => {
+    const query = `
+        UPDATE manitto
+        SET activated = false
+        WHERE room_id = ? AND user_id = ?;
+    `;
+    const result = await executeQuery(query, [memberData.roomId, memberData.userId]);
+    if (result.affectedRows === 0) { throwError(StatusCodes.NOT_FOUND, '해당 방의 멤버를 찾을 수 없습니다.'); }
+    return result;
+}

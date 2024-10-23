@@ -1,5 +1,7 @@
+import { StatusCodes } from 'http-status-codes';
 import { generateUniqueRandomCode } from '../../common/code-generator.js';
-import { insertManitto, insertRoom, isRoomCodeExists, selectRoom, selectRoomIdByCode, selectRoomInfo, selectUserIdByCode } from '../dao/room-dao.js';
+import { throwError } from '../../common/response-helper.js';
+import { checkRoomAdmin, deletePatchRoomMember, insertManitto, insertRoom, isRoomCodeExists, selectRoom, selectRoomIdByCode, selectRoomInfo, selectUserIdByCode } from '../dao/room-dao.js';
 
 /**
  * 유저 코드로 방 정보를 검색하는 함수
@@ -84,4 +86,25 @@ export const participateRoom = async (userCode, invitationCode) => {
     const roomId = await selectRoomIdByCode(invitationCode);
     const manittoId = await insertManitto({ userId, roomId });
     return manittoId; // 생성된 마니또 관계 (방-유저) 반환
+}
+
+/**
+ * 방 멤버를 삭제하는 함수 (관리자만 가능)
+ * 
+ * 주어진 유저 코드(userCode)를 통해 방의 관리자 여부를 확인한 후,
+ * 삭제할 유저 ID가 방장 자신인 경우 삭제가 불가능하도록 에러를 발생시킵니다.
+ * 방장 확인 후, 멤버를 비활성화(삭제) 처리합니다.
+ * 
+ * @param {string} userCode - 방 관리자의 유저 코드 (user.code)
+ * @param {number} roomId - 방 ID
+ * @param {number} userId - 삭제할 유저의 ID
+ * @returns {Promise<Object>} - 삭제 결과
+ * @throws {BaseError} - 방장이 자기 자신을 삭제하려고 하거나, 방장이 아닌 경우, 또는 삭제할 유저가 없을 경우 에러 발생
+ */
+export const removeRoomMember = async (userCode, roomId, userId) => {
+    const adminUserId = await selectUserIdByCode(userCode);
+    if (adminUserId == userId) { throwError(StatusCodes.BAD_REQUEST, '방장은 자기 자신을 삭제할 수 없습니다.'); }
+    await checkRoomAdmin({ adminUserId, roomId });
+    const result = await deletePatchRoomMember({ roomId, userId });
+    return result;
 }
