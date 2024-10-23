@@ -50,7 +50,7 @@ export const isRoomCodeExists = async (roomCode) => {
  */
 export const selectRoom = async (userId) => {
     const query = `
-        SELECT room.*
+        SELECT DISTINCT room.*
         FROM room
         LEFT JOIN manitto ON room.id = manitto.room_id
         WHERE room.admin_user_id = ? OR manitto.user_id = ?;
