@@ -72,7 +72,79 @@ export const selectRoom = async (userId) => {
  * @returns {Promise<number>} - 생성된 방의 ID
  */
 export const insertRoom = async (roomData) => {
-    const query = 'INSERT INTO room (admin_user_id, invitation_code, room_name, end_date) VALUES (?, ?, ?, ?)'
+    // 방 생성 쿼리
+    const query = 'INSERT INTO room (admin_user_id, invitation_code, room_name, end_date) VALUES (?, ?, ?, ?)';
     const result = await executeQuery(query, [roomData.userId, roomData.roomCode, roomData.roomName, roomData.endDate]);
+
+    // 생성된 방의 room_id와 user_id로 마니또 테이블에 추가
+    const insertQuery = 'INSERT INTO manitto (room_id, user_id) VALUES (?, ?)';
+    await executeQuery(insertQuery, [result.insertId, roomData.userId]);
+
     return result.insertId; // 생성된 방 ID 반환
+}
+
+/**
+ * 방 정보를 조회하는 함수
+ * 
+ * 주어진 roomId와 userId를 기반으로 해당 유저가 방에 속해 있는지 확인하고, 
+ * 방 정보를 조회한 후, 해당 유저가 방의 관리자인지 여부를 포함하여 반환합니다.
+ * 
+ * @param {Object} roomData - 방 정보 조회에 필요한 데이터
+ * @param {number} roomData.roomId - 조회할 방의 ID
+ * @param {number} roomData.userId - 요청하는 유저의 ID
+ * @returns {Promise<Object>} - 방 정보와 함께 해당 방의 멤버 목록 및 관리자 여부
+ * @throws {BaseError} - 유저가 방에 속하지 않거나, 방 정보를 찾을 수 없을 경우 에러를 던집니다.
+ * 
+ * 반환 객체 예시:
+ * {
+ *   id: number,  // 방 ID
+ *   roomName: string,  // 방 이름
+ *   endDate: string,  // 방 종료일 (ISO 8601 형식)
+ *   invitationCode: string,  // 방 초대 코드
+ *   isAdmin: boolean,  // 요청한 유저가 방의 관리자인지 여부
+ *   members: [  // 방에 속한 멤버 목록
+ *     {
+ *       userId: number,  // 멤버의 유저 ID
+ *       nickname: string  // 멤버의 닉네임
+ *     }
+ *   ]
+ * }
+ */
+export const selectRoomInfo = async (roomData) => {
+    // 유저가 방에 속해 있는지 확인
+    const checkQuery = `
+        SELECT COUNT(*) as count
+        FROM manitto
+        WHERE room_id = ? AND user_id = ?;
+    `;
+    const checkResult = await executeQuery(checkQuery, [roomData.roomId, roomData.userId]);
+    if (checkResult[0].count === 0) { throwError(StatusCodes.FORBIDDEN, '해당 유저는 이 방에 속해 있지 않습니다.'); }
+
+    // 방 정보 조회
+    const roomQuery = 'SELECT * FROM room WHERE id = ?';
+    const roomResult = await executeQuery(roomQuery, [roomData.roomId]);
+    if (roomResult.length === 0) { throwError(StatusCodes.NOT_FOUND, '해당 방을 찾을 수 없습니다.'); }
+
+    // 해당 roomId에 속한 manitto.userId와 user.nickname을 조회
+    const userQuery = `
+        SELECT manitto.user_id, user.nickname
+        FROM manitto
+        JOIN user ON manitto.user_id = user.id
+        WHERE manitto.room_id = ?;
+    `;
+    const userResult = await executeQuery(userQuery, [roomData.roomId]);
+    if (userResult.length === 0) { throwError(StatusCodes.NOT_FOUND, '해당 방의 멤버 목록을 찾을 수 없습니다.'); }
+
+    // admin_user_id와 현재 요청된 userId 비교하여 isAdmin 값 설정
+    const isAdmin = roomResult[0].admin_user_id === roomData.userId;
+
+    // 방 정보와 함께 유저 목록 및 isAdmin 플래그 포함한 결과 반환
+    return {
+        ...roomResult[0],  // 방 정보
+        isAdmin: isAdmin,   // 관리자 여부
+        members: userResult.map(user => ({
+            userId: user.user_id,
+            nickname: user.nickname
+        }))  // 유저 목록
+    };
 }

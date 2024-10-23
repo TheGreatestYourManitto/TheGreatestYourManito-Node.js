@@ -1,5 +1,5 @@
 import { generateUniqueRandomCode } from '../../common/code-generator.js';
-import { insertRoom, isRoomCodeExists, selectRoom, selectUserIdByCode } from '../dao/room-dao.js';
+import { insertRoom, isRoomCodeExists, selectRoom, selectRoomInfo, selectUserIdByCode } from '../dao/room-dao.js';
 
 /**
  * 유저 코드로 방 정보를 검색하는 함수
@@ -33,4 +33,37 @@ export const createRoom = async (userCode, roomName, endDate) => {
     const userId = await selectUserIdByCode(userCode);
     await insertRoom({ userId, roomCode: randomCode, roomName, endDate });
     return randomCode; // 생성된 방 코드 반환
+}
+
+/**
+ * 방 정보를 조회하는 서비스 함수
+ * 
+ * 주어진 유저 코드(userCode)와 방 ID(roomId)를 사용하여,
+ * 유저 ID를 조회한 뒤, 해당 유저가 방에 속해 있는지 확인하고,
+ * 방 정보와 방에 속한 유저 목록, 관리자 여부를 조회하여 반환합니다.
+ * 
+ * @param {string} userCode - 유저의 랜덤 배정 코드 (user.code)
+ * @param {number} roomId - 방 ID
+ * @returns {Promise<Object>} - 방 정보, 관리자 여부, 유저 목록을 포함한 객체
+ * @throws {BaseError} - 유저를 찾지 못했거나 방 정보를 조회하는 과정에서 문제가 발생할 경우 에러를 던집니다.
+ * 
+ * 반환 객체 예시:
+ * {
+ *   id: number,  // 방 ID
+ *   roomName: string,  // 방 이름
+ *   endDate: string,  // 방 종료일 (ISO 8601 형식)
+ *   invitationCode: string,  // 방 초대 코드
+ *   isAdmin: boolean,  // 요청한 유저가 방의 관리자인지 여부
+ *   members: [  // 방에 속한 멤버 목록
+ *     {
+ *       userId: number,  // 멤버의 유저 ID
+ *       nickname: string  // 멤버의 닉네임
+ *     }
+ *   ]
+ * }
+ */
+export const searchRoomInfo = async (userCode, roomId) => {
+    const userId = await selectUserIdByCode(userCode);
+    const roomInfo = await selectRoomInfo({ userId, roomId });
+    return roomInfo;
 }
