@@ -72,8 +72,14 @@ export const selectRoom = async (userId) => {
  * @returns {Promise<number>} - 생성된 방의 ID
  */
 export const insertRoom = async (roomData) => {
-    const query = 'INSERT INTO room (admin_user_id, invitation_code, room_name, end_date) VALUES (?, ?, ?, ?)'
+    // 방 생성 쿼리
+    const query = 'INSERT INTO room (admin_user_id, invitation_code, room_name, end_date) VALUES (?, ?, ?, ?)';
     const result = await executeQuery(query, [roomData.userId, roomData.roomCode, roomData.roomName, roomData.endDate]);
+
+    // 생성된 방의 room_id와 user_id로 마니또 테이블에 추가
+    const insertQuery = 'INSERT INTO manitto (room_id, user_id) VALUES (?, ?)';
+    await executeQuery(insertQuery, [result.insertId, roomData.userId]);
+
     return result.insertId; // 생성된 방 ID 반환
 }
 
