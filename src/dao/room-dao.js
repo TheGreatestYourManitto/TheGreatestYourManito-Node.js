@@ -221,7 +221,7 @@ export const checkRoomAdmin = async (adminData) => {
  * @returns {Promise<Object>} - 삭제 결과
  * @throws {BaseError} - 멤버가 존재하지 않을 경우 에러 발생
  */
-export const deletePatchRoomMember = async (memberData) => {
+export const deleteRoomMember = async (memberData) => {
     const query = `
         DELETE FROM manitto
         WHERE room_id = ? AND user_id = ?;
