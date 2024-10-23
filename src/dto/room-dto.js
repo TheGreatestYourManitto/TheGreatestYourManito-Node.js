@@ -2,6 +2,15 @@ import Joi from 'joi';
 import { UserProperty } from './user-dto.js';
 
 export const RoomProperty = {
+    // roomId: 숫자, 필수
+    roomId: Joi.number()
+        .integer()
+        .required()
+        .messages({
+            'number.base': 'roomId는 숫자여야 합니다.',
+            'any.required': 'roomId가 비어있습니다.',
+        }),
+
     // invitationCode: 최대 8자 이하 문자열, 필수
     invitationCode: Joi.string()
         .max(8)
@@ -55,5 +64,9 @@ export const RoomSchema = {
         userCode: UserProperty.userCode,
         roomName: RoomProperty.roomName,
         endDate: RoomProperty.endDate
+    }),
+    getRoomInfoDto: Joi.object({
+        userCode: UserProperty.userCode,
+        roomId: RoomProperty.roomId
     })
 };
