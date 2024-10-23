@@ -68,6 +68,17 @@ export const searchRoomInfo = async (userCode, roomId) => {
     return roomInfo;
 }
 
+/**
+ * 유저가 방에 참여하는 함수
+ * 
+ * 주어진 유저 코드(userCode)와 초대 코드(invitationCode)를 사용하여,
+ * 유저 ID와 방 ID를 조회한 후, 해당 유저를 방에 참여시킵니다.
+ * 
+ * @param {string} userCode - 유저의 랜덤 배정 코드 (user.code)
+ * @param {string} invitationCode - 방의 초대 코드 (invitation_code)
+ * @returns {Promise<number>} - 생성된 마니또 관계 (방-유저)의 ID
+ * @throws {BaseError} - 방 초대 코드를 찾지 못했거나 유저를 찾지 못한 경우 에러를 던집니다.
+ */
 export const participateRoom = async (userCode, invitationCode) => {
     const userId = await selectUserIdByCode(userCode);
     const roomId = await selectRoomIdByCode(invitationCode);

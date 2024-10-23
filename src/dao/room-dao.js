@@ -149,18 +149,36 @@ export const selectRoomInfo = async (roomData) => {
     };
 }
 
+/**
+ * 방 초대 코드로 방 ID를 조회하는 함수
+ * 
+ * 주어진 방 초대 코드(invitation_code)를 사용하여, 방 ID를 조회합니다.
+ * 방이 존재하지 않을 경우, 404 상태 코드를 포함한 에러를 던집니다.
+ * 
+ * @param {string} invitationCode - 방의 초대 코드 (invitation_code)
+ * @returns {Promise<number>} - 조회된 방의 ID
+ * @throws {BaseError} - 방이 존재하지 않을 경우 에러를 던집니다.
+ */
 export const selectRoomIdByCode = async (invitationCode) => {
     const query = 'SELECT id FROM room WHERE invitation_code = ?';
     const result = await executeQuery(query, [invitationCode]);
 
     // 방이 없을 경우 에러 처리
-    if (result.length === 0) {
-        throwError(StatusCodes.NOT_FOUND, '해당 방을 찾을 수 없습니다.');
-    }
+    if (result.length === 0) { throwError(StatusCodes.NOT_FOUND, '해당 방을 찾을 수 없습니다.'); }
 
     return result[0].id;  // 방 ID 반환
 }
 
+/**
+ * 방과 유저를 마니또 관계로 추가하는 함수
+ * 
+ * 주어진 방 ID와 유저 ID를 사용하여, 해당 유저를 방에 마니또로 추가합니다.
+ * 
+ * @param {Object} manittoData - 마니또 관계를 생성하는 데 필요한 데이터
+ * @param {number} manittoData.roomId - 방 ID
+ * @param {number} manittoData.userId - 유저 ID
+ * @returns {Promise<number>} - 생성된 마니또 관계의 ID
+ */
 export const insertManitto = async (manittoData) => {
     const query = 'INSERT INTO manitto (room_id, user_id) VALUES (?, ?)';
     const result = await executeQuery(query, [manittoData.roomId, manittoData.userId]);
