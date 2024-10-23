@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 import { executeQuery } from '../../common/db-helper.js';
 import { throwError } from '../../common/response-helper.js';
 import { exceptions } from 'winston';
-import { insertUserRoomSetting } from './user-room-setting-dao.js';
+import { deleteUserRoomSetting, insertUserRoomSetting, isDeletedInRoomSetting, updateUserRoomSetting } from './user-room-setting-dao.js';
 
 
 /**
@@ -55,9 +55,10 @@ export const selectRoom = async (userId) => {
         SELECT DISTINCT room.*
         FROM room
         LEFT JOIN manitto ON room.id = manitto.room_id
-        WHERE room.admin_user_id = ? OR manitto.user_id = ?;
+        LEFT JOIN user_room_setting urs ON room.id = urs.room_id AND urs.user_id = ?
+        WHERE (room.admin_user_id = ? OR manitto.user_id = ?) AND (urs.is_deleted IS NULL OR urs.is_deleted = FALSE);
     `;
-    const result = await executeQuery(query, [userId, userId]);
+    const result = await executeQuery(query, [userId, userId, userId]);
     return result;   // 조회된 방 리스트 반환
 };
 
@@ -182,10 +183,18 @@ export const selectRoomIdByCode = async (invitationCode) => {
  * @returns {Promise<number>} - 생성된 마니또 관계의 ID
  */
 export const insertManitto = async (manittoData) => {
-    const query = 'INSERT INTO manitto (room_id, user_id) VALUES (?, ?)';
-    const result = await executeQuery(query, [manittoData.roomId, manittoData.userId]);
-    await insertUserRoomSetting({ userId: manittoData.userId, roomId: manittoData.roomId, isDeleted: false });
-    return result.insertId;
+
+    const isDeleted = await isDeletedInRoomSetting(manittoData.userId, manittoData.roomId);
+    if (isDeleted) {
+        await updateUserRoomSetting({ userId: manittoData.userId, roomId: manittoData.roomId, isDeleted: false });
+        return;
+    }
+    else {
+        const query = 'INSERT INTO manitto (room_id, user_id) VALUES (?, ?)';
+        const result = await executeQuery(query, [manittoData.roomId, manittoData.userId]);
+        await insertUserRoomSetting({ userId: manittoData.userId, roomId: manittoData.roomId, isDeleted: false });
+        return result.insertId;
+    }
 }
 
 /**
@@ -231,6 +240,7 @@ export const deleteRoomMember = async (memberData) => {
     `;
     const result = await executeQuery(query, [memberData.roomId, memberData.userId]);
     if (result.affectedRows === 0) { throwError(StatusCodes.NOT_FOUND, '해당 방의 멤버를 찾을 수 없습니다.'); }
+    await deleteUserRoomSetting({ userId: memberData.userId, roomId: memberData.roomId });
     return result;
 }
 

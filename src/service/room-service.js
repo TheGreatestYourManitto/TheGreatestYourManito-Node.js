@@ -3,6 +3,7 @@ import { generateUniqueRandomCode } from '../../common/code-generator.js';
 import { throwError } from '../../common/response-helper.js';
 import { checkRoomAdmin, deleteRoomMember, insertManitto, insertRoom, isRoomCodeExists, selectManittoInfo, selectRoom, selectRoomIdByCode, selectRoomInfo, selectUserIdByCode, selectUserIdFromManitto, updateManittoUserId, updateRoomStatus } from '../dao/room-dao.js';
 import { shuffleArray } from '../../common/utils.js';
+import { insertUserRoomSetting, updateUserRoomSetting } from '../dao/user-room-setting-dao.js';
 
 /**
  * 유저 코드로 방 정보를 검색하는 함수
@@ -175,4 +176,10 @@ export const searchManitto = async (userCode, roomId) => {
     const userId = await selectUserIdByCode(userCode);
     const user = await selectManittoInfo({ userId, roomId });
     return user;
+}
+
+export const removeRoom = async (userCode, roomId) => {
+    const userId = await selectUserIdByCode(userCode);
+    await updateUserRoomSetting({ userId, roomId, isDeleted: true });
+    return;
 }
