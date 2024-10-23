@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 import { executeQuery } from '../../common/db-helper.js';
 import { throwError } from '../../common/response-helper.js';
+import { exceptions } from 'winston';
 
 
 /**
@@ -318,4 +319,11 @@ export const selectManittoInfo = async ({ userId, roomId }) => {
     const result = await executeQuery(query, [roomId, userId]);
     if (result.length === 0) { throwError(StatusCodes.NOT_FOUND, '해당 유저의 마니또 정보를 찾을 수 없습니다.'); }
     return result[0];  // user.id와 user.nickname 반환
+}
+
+export const selectManittoId = async ({ manittoUserId, roomId }) => {
+    const query = `SELECT * FROM manitto WHERE room_id = ? AND manitto_user_id = ?`;
+    const result = await executeQuery(query, [roomId, manittoUserId]);
+    if (result.length === 0) { throwError(StatusCodes.NOT_FOUND, '해당 유저의 마니또 정보를 찾을 수 없습니다.'); }
+    return result[0].id;  // manitto 관계의 id 반환
 }

@@ -1,4 +1,5 @@
-import { selectCheerMessage } from "../dao/cheer-dao.js";
+import { insertCheer, selectCheerMessage, selectCheerTypeId } from "../dao/cheer-dao.js";
+import { selectManittoId, selectUserIdByCode } from "../dao/room-dao.js";
 
 /**
  * 응원 메시지를 검색하는 함수
@@ -12,4 +13,12 @@ import { selectCheerMessage } from "../dao/cheer-dao.js";
 export const searchCheerMessage = async (type) => {
     const message = await selectCheerMessage(type);
     return message;
+}
+
+export const sendCheer = async ({ userCode, roomId, cheerType, message }) => {
+    const userId = await selectUserIdByCode(userCode);
+    const manittoId = await selectManittoId({ manittoUserId: userId, roomId });
+    const cheerTypeId = await selectCheerTypeId(cheerType);
+    const todaysCount = await insertCheer({ typeId: cheerTypeId, message, manittoId });
+    return todaysCount;
 }
