@@ -9,5 +9,7 @@ router.get('/', RoomController.getRoomList);
 router.post('/', RoomController.postRoom);
 // 방 정보 get API
 router.get('/:roomId', RoomController.getRoomInfo);
+// 방 참여 post API
+router.post('/participate', RoomController.postRoomParticipate);
 
 export default router;
