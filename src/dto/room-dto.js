@@ -77,5 +77,9 @@ export const RoomSchema = {
         userCode: UserProperty.userCode,
         roomId: RoomProperty.roomId,
         userId: UserProperty.userId
+    }),
+    patchRoomStatusDto: Joi.object({
+        userCode: UserProperty.userCode,
+        roomId: RoomProperty.roomId
     })
 };

@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 import { generateUniqueRandomCode } from '../../common/code-generator.js';
 import { throwError } from '../../common/response-helper.js';
-import { checkRoomAdmin, deletePatchRoomMember, insertManitto, insertRoom, isRoomCodeExists, selectRoom, selectRoomIdByCode, selectRoomInfo, selectUserIdByCode } from '../dao/room-dao.js';
+import { checkRoomAdmin, deleteRoomMember, insertManitto, insertRoom, isRoomCodeExists, selectRoom, selectRoomIdByCode, selectRoomInfo, selectUserIdByCode, updateRoomStatus } from '../dao/room-dao.js';
 
 /**
  * 유저 코드로 방 정보를 검색하는 함수
@@ -105,6 +105,13 @@ export const removeRoomMember = async (userCode, roomId, userId) => {
     const adminUserId = await selectUserIdByCode(userCode);
     if (adminUserId == userId) { throwError(StatusCodes.BAD_REQUEST, '방장은 자기 자신을 삭제할 수 없습니다.'); }
     await checkRoomAdmin({ adminUserId, roomId });
-    const result = await deletePatchRoomMember({ roomId, userId });
+    const result = await deleteRoomMember({ roomId, userId });
+    return result;
+}
+
+export const confirmRoomStatus = async (userCode, roomId) => {
+    const userId = await selectUserIdByCode(userCode);
+    await checkRoomAdmin({ adminUserId: userId, roomId });
+    const result = await updateRoomStatus({ userId, roomId })
     return result;
 }

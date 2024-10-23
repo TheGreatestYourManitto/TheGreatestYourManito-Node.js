@@ -204,7 +204,7 @@ export const checkRoomAdmin = async (adminData) => {
         FROM room
         WHERE id = ? AND admin_user_id = ?;
     `;
-    const checkResult = await executeQuery(query, [adminData.roomId, adminData.userId]);
+    const checkResult = await executeQuery(query, [adminData.roomId, adminData.adminUserId]);
     if (checkResult[0].count === 0) { throwError(StatusCodes.FORBIDDEN, '해당 유저는 이 방의 방장이 아닙니다.'); }
 }
 
@@ -221,12 +221,23 @@ export const checkRoomAdmin = async (adminData) => {
  * @returns {Promise<Object>} - 삭제 결과
  * @throws {BaseError} - 멤버가 존재하지 않을 경우 에러 발생
  */
-export const deletePatchRoomMember = async (memberData) => {
+export const deleteRoomMember = async (memberData) => {
     const query = `
         DELETE FROM manitto
         WHERE room_id = ? AND user_id = ?;
     `;
     const result = await executeQuery(query, [memberData.roomId, memberData.userId]);
     if (result.affectedRows === 0) { throwError(StatusCodes.NOT_FOUND, '해당 방의 멤버를 찾을 수 없습니다.'); }
+    return result;
+}
+
+export const updateRoomStatus = async (adminData) => {
+    const query = `
+        UPDATE room 
+        SET is_confirmed = true 
+        WHERE admin_user_id = ? AND id = ?; 
+    `;
+    const result = await executeQuery(query, [adminData.userId, adminData.roomId]);
+    if (result.affectedRows === 0) { throwError(StatusCodes.NOT_FOUND, '해당 방을 찾을 수 없습니다.'); }
     return result;
 }
