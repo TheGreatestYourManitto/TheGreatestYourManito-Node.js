@@ -1,8 +1,9 @@
 import { StatusCodes } from 'http-status-codes';
 import { generateUniqueRandomCode } from '../../common/code-generator.js';
 import { throwError } from '../../common/response-helper.js';
-import { checkRoomAdmin, deleteRoomMember, insertManitto, insertRoom, isRoomCodeExists, selectManittoInfo, selectRoom, selectRoomIdByCode, selectRoomInfo, selectUserIdByCode, selectUserIdFromManitto, updateManittoUserId, updateRoomStatus } from '../dao/room-dao.js';
+import { checkRoomAdmin, countCheerByType, deleteRoomMember, getRoomManittoCheerSummary, insertManitto, insertRoom, isRoomCodeExists, selectManittoId, selectManittoInfo, selectRoom, selectRoomIdByCode, selectRoomInfo, selectUserIdByCode, selectUserIdFromManitto, updateManittoUserId, updateRoomStatus } from '../dao/room-dao.js';
 import { shuffleArray } from '../../common/utils.js';
+import { updateUserRoomSetting } from '../dao/user-room-setting-dao.js';
 
 /**
  * 유저 코드로 방 정보를 검색하는 함수
@@ -175,4 +176,58 @@ export const searchManitto = async (userCode, roomId) => {
     const userId = await selectUserIdByCode(userCode);
     const user = await selectManittoInfo({ userId, roomId });
     return user;
+}
+
+/**
+ * 방을 삭제(비활성화)하는 함수
+ * 
+ * 주어진 유저 코드와 방 ID를 통해, 해당 유저의 방 설정을 업데이트하여 방을 비활성화합니다.
+ * 즉, 방을 "삭제" 상태로 처리합니다.
+ * 
+ * @param {string} userCode - 유저의 랜덤 배정 코드 (user.code)
+ * @param {number} roomId - 방 ID
+ * @returns {Promise<void>} - 성공 시 아무런 값을 반환하지 않습니다.
+ * @throws {BaseError} - 유저를 찾지 못하거나 방 설정을 업데이트하는 과정에서 에러 발생 시 에러를 던집니다.
+ */
+export const removeRoom = async (userCode, roomId) => {
+    const userId = await selectUserIdByCode(userCode);
+    await updateUserRoomSetting({ userId, roomId, isDeleted: true });
+    return;
+}
+
+
+/**
+ * 마니또 결과를 조회하는 함수
+ * 
+ * 주어진 유저 코드와 방 ID를 통해, 해당 유저의 마니또 정보를 조회하고, 마니또 응원 메시지의 카운트를 확인합니다.
+ * 또한 방에 속한 모든 유저의 마니또 응원 현황을 집계하여 랭킹을 반환합니다.
+ * 
+ * @param {string} userCode - 유저의 랜덤 배정 코드 (user.code)
+ * @param {number} roomId - 방 ID
+ * @returns {Promise<Object>} - 유저의 마니또 정보, 응원 카운트, 그리고 마니또 랭킹을 포함한 객체를 반환합니다.
+ * @throws {BaseError} - 유저를 찾지 못했거나 마니또 정보를 조회하는 과정에서 에러 발생 시 에러를 던집니다.
+ */
+export const getManittoResult = async (userCode, roomId) => {
+    const userId = await selectUserIdByCode(userCode);
+    const manittoInfo = await selectManittoInfo({ userId, roomId }); // 현재 유저의 마니또 정보
+    const manittoId = await selectManittoId({ manittoUserId: manittoInfo.id, roomId })
+    const cheerCounts = await countCheerByType({ manittoId });  // 응원 카운트
+    const manittoSummary = await getRoomManittoCheerSummary(roomId); // 전체 마니또 랭킹 정보
+    const manittoRank = manittoSummary.map((item, index) => ({
+        rank: index + 1,
+        userId: item.user_id,
+        userName: item.userName,
+        manittoUserId: item.manitto_user_id,
+        manittoUserName: item.manittoUserName,
+        cheerCount: item.cheer_count
+    }));
+
+    return {
+        manitto: {
+            userName: manittoInfo.nickname,
+            userId: manittoInfo.id,
+        },
+        cheerCounts: cheerCounts,
+        manittoRank: manittoRank
+    };
 }

@@ -17,5 +17,9 @@ router.delete('/:roomId/member/:userId', RoomController.deleteRoomMember);
 router.patch('/:roomId', RoomController.patchRoomStatus);
 // 방의 마니또 상대 확인 get API
 router.get('/:roomId/receiver', RoomController.getManittoReceiver);
+// 방의 결과 get API
+router.get('/:roomId/result', RoomController.getRoomResult);
+// 방 삭제 요청 delete API
+router.delete('/:roomId/withdraw', RoomController.deleteRoom);
 
 export default router;

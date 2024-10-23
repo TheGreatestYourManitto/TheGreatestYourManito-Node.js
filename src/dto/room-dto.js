@@ -81,5 +81,9 @@ export const RoomSchema = {
     patchRoomStatusDto: Joi.object({
         userCode: UserProperty.userCode,
         roomId: RoomProperty.roomId
+    }),
+    deleteRoomDto: Joi.object({
+        userCode: UserProperty.userCode,
+        roomId: RoomProperty.roomId
     })
 };

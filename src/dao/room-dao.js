@@ -2,6 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 import { executeQuery } from '../../common/db-helper.js';
 import { throwError } from '../../common/response-helper.js';
 import { exceptions } from 'winston';
+import { deleteUserRoomSetting, insertUserRoomSetting, isDeletedInRoomSetting, updateUserRoomSetting } from './user-room-setting-dao.js';
 
 
 /**
@@ -54,9 +55,10 @@ export const selectRoom = async (userId) => {
         SELECT DISTINCT room.*
         FROM room
         LEFT JOIN manitto ON room.id = manitto.room_id
-        WHERE room.admin_user_id = ? OR manitto.user_id = ?;
+        LEFT JOIN user_room_setting urs ON room.id = urs.room_id AND urs.user_id = ?
+        WHERE (room.admin_user_id = ? OR manitto.user_id = ?) AND (urs.is_deleted IS NULL OR urs.is_deleted = FALSE);
     `;
-    const result = await executeQuery(query, [userId, userId]);
+    const result = await executeQuery(query, [userId, userId, userId]);
     return result;   // 조회된 방 리스트 반환
 };
 
@@ -80,7 +82,7 @@ export const insertRoom = async (roomData) => {
     // 생성된 방의 room_id와 user_id로 마니또 테이블에 추가
     const insertQuery = 'INSERT INTO manitto (room_id, user_id) VALUES (?, ?)';
     await executeQuery(insertQuery, [result.insertId, roomData.userId]);
-
+    await insertUserRoomSetting({ userId: roomData.userId, roomId: result.insertId, isDeleted: false });
     return result.insertId; // 생성된 방 ID 반환
 }
 
@@ -181,9 +183,18 @@ export const selectRoomIdByCode = async (invitationCode) => {
  * @returns {Promise<number>} - 생성된 마니또 관계의 ID
  */
 export const insertManitto = async (manittoData) => {
-    const query = 'INSERT INTO manitto (room_id, user_id) VALUES (?, ?)';
-    const result = await executeQuery(query, [manittoData.roomId, manittoData.userId]);
-    return result.insertId;
+
+    const isDeleted = await isDeletedInRoomSetting(manittoData.userId, manittoData.roomId);
+    if (isDeleted) {
+        await updateUserRoomSetting({ userId: manittoData.userId, roomId: manittoData.roomId, isDeleted: false });
+        return;
+    }
+    else {
+        const query = 'INSERT INTO manitto (room_id, user_id) VALUES (?, ?)';
+        const result = await executeQuery(query, [manittoData.roomId, manittoData.userId]);
+        await insertUserRoomSetting({ userId: manittoData.userId, roomId: manittoData.roomId, isDeleted: false });
+        return result.insertId;
+    }
 }
 
 /**
@@ -229,6 +240,7 @@ export const deleteRoomMember = async (memberData) => {
     `;
     const result = await executeQuery(query, [memberData.roomId, memberData.userId]);
     if (result.affectedRows === 0) { throwError(StatusCodes.NOT_FOUND, '해당 방의 멤버를 찾을 수 없습니다.'); }
+    await deleteUserRoomSetting({ userId: memberData.userId, roomId: memberData.roomId });
     return result;
 }
 
@@ -337,4 +349,46 @@ export const selectManittoId = async ({ manittoUserId, roomId }) => {
     const result = await executeQuery(query, [roomId, manittoUserId]);
     if (result.length === 0) { throwError(StatusCodes.NOT_FOUND, '해당 유저의 마니또 정보를 찾을 수 없습니다.'); }
     return result[0].id;  // manitto 관계의 id 반환
+}
+
+/**
+ * manitto와 연결된 cheer 메시지를 타입별로 카운트하는 함수
+ * @param {Object} data - manitto 정보
+ * @param {number} data.manittoId - manitto 관계 ID
+ * @returns {Promise<Object>} - 타입별 응원 메시지 개수
+ */
+export const countCheerByType = async ({ manittoId }) => {
+    const query = `
+        SELECT cheer_type.type_name, COUNT(cheer.id) AS count
+        FROM cheer_type
+        LEFT JOIN cheer ON cheer.cheer_type_id = cheer_type.id AND cheer.manitto_relation_id = ?
+        GROUP BY cheer_type.type_name;
+    `;
+    const result = await executeQuery(query, [manittoId]);
+    return result.reduce((acc, row) => {
+        acc[row.type_name] = row.count;
+        return acc;
+    }, {});
+}
+
+/**
+ * roomId에 연결된 모든 manitto 관계와 그들의 cheer 내역을 가져오는 함수
+ * @param {number} roomId - 방 ID
+ * @returns {Promise<Array>} - manitto 관계와 응원 메시지 내역을 내림차순으로 정렬하여 반환
+ */
+export const getRoomManittoCheerSummary = async (roomId) => {
+    const query = `
+        SELECT m.user_id, u1.nickname AS userName, 
+               m.manitto_user_id, u2.nickname AS manittoUserName,
+               COUNT(c.id) AS cheer_count
+        FROM manitto m
+        LEFT JOIN user u1 ON m.user_id = u1.id
+        LEFT JOIN user u2 ON m.manitto_user_id = u2.id
+        LEFT JOIN cheer c ON c.manitto_relation_id = m.id
+        WHERE m.room_id = ?
+        GROUP BY m.user_id, m.manitto_user_id, u1.nickname, u2.nickname
+        ORDER BY cheer_count DESC;
+    `;
+    const result = await executeQuery(query, [roomId]);
+    return result;
 }
