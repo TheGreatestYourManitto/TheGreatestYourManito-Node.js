@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 import { executeQuery } from '../../common/db-helper.js';
 import { throwError } from '../../common/response-helper.js';
+import { exceptions } from 'winston';
 
 
 /**
@@ -318,4 +319,22 @@ export const selectManittoInfo = async ({ userId, roomId }) => {
     const result = await executeQuery(query, [roomId, userId]);
     if (result.length === 0) { throwError(StatusCodes.NOT_FOUND, '해당 유저의 마니또 정보를 찾을 수 없습니다.'); }
     return result[0];  // user.id와 user.nickname 반환
+}
+
+/**
+ * 마니또 관계에서 manitto_user_id로 마니또 관계 ID 조회
+ * 
+ * 주어진 manitto_user_id와 room_id를 기반으로 마니또 관계 ID를 조회합니다.
+ * 
+ * @param {Object} data - 마니또 관계 데이터
+ * @param {number} data.manittoUserId - 마니또 상대방의 유저 ID
+ * @param {number} data.roomId - 방 ID
+ * @returns {Promise<number>} - 마니또 관계 ID
+ * @throws {BaseError} - 해당 마니또 관계가 없을 경우 에러 발생
+ */
+export const selectManittoId = async ({ manittoUserId, roomId }) => {
+    const query = `SELECT * FROM manitto WHERE room_id = ? AND manitto_user_id = ?`;
+    const result = await executeQuery(query, [roomId, manittoUserId]);
+    if (result.length === 0) { throwError(StatusCodes.NOT_FOUND, '해당 유저의 마니또 정보를 찾을 수 없습니다.'); }
+    return result[0].id;  // manitto 관계의 id 반환
 }

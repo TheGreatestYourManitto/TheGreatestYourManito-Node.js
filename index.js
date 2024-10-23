@@ -7,6 +7,7 @@ import SwaggerUi from 'swagger-ui-express';
 
 import userRouter from './src/router/user-router.js';
 import roomRouter from './src/router/room-router.js';
+import cheerRouter from './src/router/cheer-router.js';
 
 dotenv.config();
 
@@ -26,6 +27,8 @@ app.use('/api-docs', SwaggerUi.serve, SwaggerUi.setup(specs));
 app.use('/user', userRouter);
 // 방 라우터 설정
 app.use('/room', roomRouter);
+// 응원 라우타 설정
+app.use('/cheer', cheerRouter);
 
 // 지원하지 않는 요청 처리 미들웨어
 app.use((req, res, next) => {
