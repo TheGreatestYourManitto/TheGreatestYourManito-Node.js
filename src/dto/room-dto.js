@@ -57,7 +57,7 @@ export const RoomProperty = {
 };
 
 export const RoomSchema = {
-    getRoomDto: Joi.object({
+    getRoomListDto: Joi.object({
         userCode: UserProperty.userCode
     }),
     postRoomDto: Joi.object({

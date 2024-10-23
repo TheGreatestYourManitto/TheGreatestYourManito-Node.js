@@ -5,8 +5,8 @@ import { RoomSchema } from '../dto/room-dto.js';
 import { createRoom, searchRoom, searchRoomInfo } from '../service/room-service.js';
 
 export const RoomController = {
-    getRoom: asyncHandler(async (req, res) => {
-        const { error, value } = RoomSchema.getRoomDto.validate({ userCode: req.get('userCode') });
+    getRoomList: asyncHandler(async (req, res) => {
+        const { error, value } = RoomSchema.getRoomListDto.validate({ userCode: req.get('userCode') });
         if (error) { throwError(StatusCodes.BAD_REQUEST, error.details[0].message); }
         const { userCode } = value;
         const roomList = await searchRoom(userCode);
