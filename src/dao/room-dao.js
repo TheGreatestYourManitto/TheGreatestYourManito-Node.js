@@ -204,7 +204,7 @@ export const checkRoomAdmin = async (adminData) => {
         FROM room
         WHERE id = ? AND admin_user_id = ?;
     `;
-    const checkResult = await executeQuery(query, [adminData.roomId, adminData.userId]);
+    const checkResult = await executeQuery(query, [adminData.roomId, adminData.adminUserId]);
     if (checkResult[0].count === 0) { throwError(StatusCodes.FORBIDDEN, '해당 유저는 이 방의 방장이 아닙니다.'); }
 }
 
