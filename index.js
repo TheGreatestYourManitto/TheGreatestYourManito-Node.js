@@ -27,9 +27,9 @@ app.use('/user', userRouter);
 // 방 라우터 설정
 app.use('/room', roomRouter);
 
-// 지원되지 않는 URI 처리 미들웨어
+// 지원하지 않는 요청 처리 미들웨어
 app.use((req, res, next) => {
-    const err = new BaseError(responseStatus(StatusCodes.NOT_FOUND, '지원되지 않는 URI입니다.'));
+    const err = new BaseError(responseStatus(StatusCodes.NOT_FOUND, '지원되지 않는 HTTP method 혹은 URI입니다.'));
     next(err);
 });
 

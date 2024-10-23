@@ -2,7 +2,7 @@ import { ConstantResponseStatus, StatusCodes } from '../../common/index.js';
 import { sendResponse, throwError } from '../../common/response-helper.js';
 import asyncHandler from 'express-async-handler';
 import { RoomSchema } from '../dto/room-dto.js';
-import { createRoom, participateRoom, searchRoom, searchRoomInfo } from '../service/room-service.js';
+import { createRoom, participateRoom, removeRoomMember, searchRoom, searchRoomInfo } from '../service/room-service.js';
 
 export const RoomController = {
     getRoomList: asyncHandler(async (req, res) => {
@@ -37,5 +37,12 @@ export const RoomController = {
         const { userCode, invitationCode } = value;
         await participateRoom(userCode, invitationCode);
         return sendResponse(res, ConstantResponseStatus.CREATED);
+    }),
+    deleteRoomMember: asyncHandler(async (req, res) => {
+        const { error, value } = RoomSchema.deleteRoomMemberDto.validate({ userCode: req.get('userCode'), roomId: req.params.roomId, userId: req.params.userId });
+        if (error) { throwError(StatusCodes.BAD_REQUEST, error.details[0].message); }
+        const { userCode, roomId, userId } = value;
+        await removeRoomMember(userCode, roomId, userId);
+        return sendResponse(res, ConstantResponseStatus.SUCCESS);
     })
 };
