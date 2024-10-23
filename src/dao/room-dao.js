@@ -296,6 +296,18 @@ export const updateManittoUserId = async ({ roomId, userId, manittoUserId }) => 
     return result;
 }
 
+/**
+ * 특정 유저가 속한 방에서 매칭된 마니또 상대 정보를 조회하는 함수
+ * 
+ * 주어진 유저 ID(userId)와 방 ID(roomId)를 기반으로, 
+ * 해당 유저가 매칭된 마니또 상대의 유저 정보를 조회하여 반환합니다.
+ * 
+ * @param {Object} param - 유저 ID와 방 ID를 포함한 객체
+ * @param {number} param.userId - 유저 ID
+ * @param {number} param.roomId - 방 ID
+ * @returns {Promise<Object>} - 매칭된 마니또 상대의 유저 ID와 닉네임
+ * @throws {BaseError} - 마니또 상대 정보를 찾지 못했을 경우 에러 발생
+ */
 export const selectManittoInfo = async ({ userId, roomId }) => {
     const query = `        
         SELECT user.id, user.nickname

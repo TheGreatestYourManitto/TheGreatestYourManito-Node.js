@@ -160,6 +160,17 @@ const startManittoProcess = async (roomId) => {
     return manittoResult;
 }
 
+/**
+ * 유저의 마니또 상대 정보를 조회하는 함수
+ * 
+ * 주어진 유저 코드(userCode)를 기반으로 해당 유저의 ID를 조회한 후, 
+ * 해당 유저가 속한 방(roomId)에서 마니또로 매칭된 상대의 정보를 조회하여 반환합니다.
+ * 
+ * @param {string} userCode - 유저의 랜덤 배정 코드
+ * @param {number} roomId - 방 ID
+ * @returns {Promise<Object>} - 매칭된 마니또 상대의 ID와 닉네임
+ * @throws {BaseError} - 유저나 마니또 정보를 찾지 못했을 경우 에러 발생
+ */
 export const searchManitto = async (userCode, roomId) => {
     const userId = await selectUserIdByCode(userCode);
     const user = await selectManittoInfo({ userId, roomId });
