@@ -15,6 +15,19 @@ export const searchCheerMessage = async (type) => {
     return message;
 }
 
+/**
+ * 유저 코드, 방 ID, 응원 타입, 메시지를 기반으로 응원을 보내는 함수
+ * 
+ * 주어진 유저 코드를 통해 유저 ID를 조회하고, 마니또 관계를 찾아서 
+ * 해당 마니또 관계에 응원 메시지를 저장합니다.
+ * 그리고 오늘 보낸 응원의 횟수를 반환합니다.
+ * 
+ * @param {string} userCode - 유저 코드 (user.code)
+ * @param {number} roomId - 방 ID
+ * @param {string} cheerType - 응원 타입 (luck, love, fire, present 중 하나)
+ * @param {string} message - 응원 메시지
+ * @returns {Promise<number>} - 오늘 보낸 응원의 횟수
+ */
 export const sendCheer = async ({ userCode, roomId, cheerType, message }) => {
     const userId = await selectUserIdByCode(userCode);
     const manittoId = await selectManittoId({ manittoUserId: userId, roomId });
