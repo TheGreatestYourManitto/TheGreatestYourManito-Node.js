@@ -36,8 +36,8 @@ export const insertUser = async (userData) => {
  * @returns {Promise<Object[]>} - 조회된 유저 정보의 배열
  * @throws {BaseError} - DB 작업 중 에러가 발생하면 에러를 던집니다.
  */
-export const selectUser = async deviceId => {
+export const selectUser = async (deviceId) => {
     const query = 'SELECT * FROM user WHERE device_id = ?';
     const result = await executeQuery(query, [deviceId]);
-    return result;
+    return result[0];
 };
