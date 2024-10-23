@@ -1,7 +1,8 @@
 import { StatusCodes } from 'http-status-codes';
 import { generateUniqueRandomCode } from '../../common/code-generator.js';
 import { throwError } from '../../common/response-helper.js';
-import { checkRoomAdmin, deleteRoomMember, insertManitto, insertRoom, isRoomCodeExists, selectRoom, selectRoomIdByCode, selectRoomInfo, selectUserIdByCode, updateRoomStatus } from '../dao/room-dao.js';
+import { checkRoomAdmin, deleteRoomMember, insertManitto, insertRoom, isRoomCodeExists, selectManittoInfo, selectRoom, selectRoomIdByCode, selectRoomInfo, selectUserIdByCode, selectUserIdFromManitto, updateManittoUserId, updateRoomStatus } from '../dao/room-dao.js';
+import { shuffleArray } from '../../common/utils.js';
 
 /**
  * 유저 코드로 방 정보를 검색하는 함수
@@ -109,9 +110,69 @@ export const removeRoomMember = async (userCode, roomId, userId) => {
     return result;
 }
 
+/**
+ * 방 상태를 확정하는 함수
+ * 
+ * 주어진 유저 코드(userCode)를 통해 방 관리자 여부를 확인한 후,
+ * 방의 상태를 확정(is_confirmed 필드를 true로 업데이트)하고,
+ * 마니또 매칭 프로세스를 시작합니다.
+ * 
+ * @param {string} userCode - 방 관리자의 유저 코드 (user.code)
+ * @param {number} roomId - 방 ID
+ * @returns {Promise<Object>} - 방 상태 업데이트 결과
+ * @throws {BaseError} - 방 관리자가 아니거나 방이 존재하지 않는 경우 에러 발생
+ */
 export const confirmRoomStatus = async (userCode, roomId) => {
     const userId = await selectUserIdByCode(userCode);
     await checkRoomAdmin({ adminUserId: userId, roomId });
-    const result = await updateRoomStatus({ userId, roomId })
+    const result = await updateRoomStatus({ userId, roomId });
+    await startManittoProcess(roomId);
     return result;
+}
+
+/**
+ * 마니또 매칭 프로세스를 실행하는 함수
+ * 
+ * 주어진 방 ID(roomId)를 기반으로 해당 방의 유저 목록을 가져와,
+ * 각 유저에게 랜덤하게 마니또를 매칭합니다. 단, 각 유저가
+ * 자기 자신을 마니또로 가질 수 없도록 무작위로 배열을 섞습니다.
+ * 
+ * @param {number} roomId - 방 ID
+ * @returns {Promise<Array>} - 마니또 매칭 결과 리스트
+ * @throws {BaseError} - 방에 유저가 없거나 매칭된 유저 정보 업데이트 실패 시 에러 발생
+ */
+const startManittoProcess = async (roomId) => {
+    const userResult = await selectUserIdFromManitto(roomId);
+    const userIds = userResult.map(row => row.user_id);
+
+    let shuffledIds = shuffleArray([...userIds]); // 매칭용 셔플 배열
+
+    // userIds[x].user_id == shuffledIds[x].user_id가 되지 않게 셔플
+    while (shuffledIds.some((shuffledId, index) => shuffledId === userIds[index])) {
+        shuffledIds = shuffleArray([...userIds]);
+    }
+
+    const manittoResult = await Promise.all(userIds.map((userId, index) => {
+        const manittoUserId = shuffledIds[index];
+        return updateManittoUserId({ roomId, userId, manittoUserId });
+    }));
+
+    return manittoResult;
+}
+
+/**
+ * 유저의 마니또 상대 정보를 조회하는 함수
+ * 
+ * 주어진 유저 코드(userCode)를 기반으로 해당 유저의 ID를 조회한 후, 
+ * 해당 유저가 속한 방(roomId)에서 마니또로 매칭된 상대의 정보를 조회하여 반환합니다.
+ * 
+ * @param {string} userCode - 유저의 랜덤 배정 코드
+ * @param {number} roomId - 방 ID
+ * @returns {Promise<Object>} - 매칭된 마니또 상대의 ID와 닉네임
+ * @throws {BaseError} - 유저나 마니또 정보를 찾지 못했을 경우 에러 발생
+ */
+export const searchManitto = async (userCode, roomId) => {
+    const userId = await selectUserIdByCode(userCode);
+    const user = await selectManittoInfo({ userId, roomId });
+    return user;
 }

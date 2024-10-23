@@ -231,6 +231,18 @@ export const deleteRoomMember = async (memberData) => {
     return result;
 }
 
+/**
+ * 방의 상태를 업데이트하는 함수
+ * 
+ * 주어진 방 ID(roomId)와 관리자 ID(userId)를 기반으로 방의 상태를 '확정됨'으로 업데이트합니다.
+ * 방이 존재하지 않거나 업데이트에 실패할 경우, 404 에러를 발생시킵니다.
+ * 
+ * @param {Object} adminData - 방 상태 업데이트에 필요한 데이터
+ * @param {number} adminData.userId - 방 관리자의 유저 ID
+ * @param {number} adminData.roomId - 업데이트할 방의 ID
+ * @returns {Promise<Object>} - 방 상태 업데이트 결과
+ * @throws {BaseError} - 방이 존재하지 않거나 업데이트에 실패할 경우 에러 발생
+ */
 export const updateRoomStatus = async (adminData) => {
     const query = `
         UPDATE room 
@@ -240,4 +252,70 @@ export const updateRoomStatus = async (adminData) => {
     const result = await executeQuery(query, [adminData.userId, adminData.roomId]);
     if (result.affectedRows === 0) { throwError(StatusCodes.NOT_FOUND, '해당 방을 찾을 수 없습니다.'); }
     return result;
+}
+
+
+/**
+ * 특정 방의 모든 유저 ID를 조회하는 함수
+ * 
+ * 주어진 방 ID(roomId)를 기반으로 해당 방에 속한 유저들의 ID 목록을 반환합니다.
+ * 방에 속한 유저가 없을 경우 404 에러를 발생시킵니다.
+ * 
+ * @param {number} roomId - 조회할 방의 ID
+ * @returns {Promise<Array>} - 해당 방에 속한 유저들의 ID 배열
+ * @throws {BaseError} - 방에 속한 유저가 없을 경우 에러 발생
+ */
+export const selectUserIdFromManitto = async (roomId) => {
+    const query = `SELECT user_id FROM manitto WHERE room_id = ?`;
+    const result = await executeQuery(query, [roomId]);
+    if (result.length === 0) { throwError(StatusCodes.NOT_FOUND, '해당 방의 멤버를 찾을 수 없습니다.'); }
+    return result;
+}
+
+/**
+ * 마니또 유저 ID를 업데이트하는 함수
+ * 
+ * 주어진 방 ID(roomId)와 유저 ID(userId)를 기반으로 마니또로 배정된 유저 ID를 업데이트합니다.
+ * 업데이트가 실패하거나 방/유저가 존재하지 않을 경우, 404 에러를 발생시킵니다.
+ * 
+ * @param {Object} data - 마니또 유저 ID 업데이트에 필요한 데이터
+ * @param {number} data.roomId - 업데이트할 방의 ID
+ * @param {number} data.userId - 마니또를 배정받는 유저의 ID
+ * @param {number} data.manittoUserId - 마니또로 배정할 유저의 ID
+ * @returns {Promise<Object>} - 마니또 유저 ID 업데이트 결과
+ * @throws {BaseError} - 방이나 유저가 존재하지 않거나 업데이트에 실패할 경우 에러 발생
+ */
+export const updateManittoUserId = async ({ roomId, userId, manittoUserId }) => {
+    const query = `
+        UPDATE manitto
+        SET manitto_user_id = ?
+        WHERE room_id = ? AND user_id = ?;
+    `;
+    const result = await executeQuery(query, [manittoUserId, roomId, userId]);
+    if (result.affectedRows === 0) { throwError(StatusCodes.NOT_FOUND, '매칭된 유저 정보를 업데이트하지 못했습니다.'); }
+    return result;
+}
+
+/**
+ * 특정 유저가 속한 방에서 매칭된 마니또 상대 정보를 조회하는 함수
+ * 
+ * 주어진 유저 ID(userId)와 방 ID(roomId)를 기반으로, 
+ * 해당 유저가 매칭된 마니또 상대의 유저 정보를 조회하여 반환합니다.
+ * 
+ * @param {Object} param - 유저 ID와 방 ID를 포함한 객체
+ * @param {number} param.userId - 유저 ID
+ * @param {number} param.roomId - 방 ID
+ * @returns {Promise<Object>} - 매칭된 마니또 상대의 유저 ID와 닉네임
+ * @throws {BaseError} - 마니또 상대 정보를 찾지 못했을 경우 에러 발생
+ */
+export const selectManittoInfo = async ({ userId, roomId }) => {
+    const query = `        
+        SELECT user.id, user.nickname
+        FROM manitto
+        JOIN user ON manitto.manitto_user_id = user.id
+        WHERE manitto.room_id = ? AND manitto.user_id = ?;
+    `;
+    const result = await executeQuery(query, [roomId, userId]);
+    if (result.length === 0) { throwError(StatusCodes.NOT_FOUND, '해당 유저의 마니또 정보를 찾을 수 없습니다.'); }
+    return result[0];  // user.id와 user.nickname 반환
 }
