@@ -13,5 +13,7 @@ router.get('/:roomId', RoomController.getRoomInfo);
 router.post('/participate', RoomController.postRoomParticipate);
 // 방 멤버 삭제 delete API
 router.delete('/:roomId/member/:userId', RoomController.deleteRoomMember);
+// 방 상태 확정 patch API
+router.patch('/:roomId', RoomController.patchRoomStatus);
 
 export default router;

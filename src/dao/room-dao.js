@@ -230,3 +230,14 @@ export const deletePatchRoomMember = async (memberData) => {
     if (result.affectedRows === 0) { throwError(StatusCodes.NOT_FOUND, '해당 방의 멤버를 찾을 수 없습니다.'); }
     return result;
 }
+
+export const updateRoomStatus = async (adminData) => {
+    const query = `
+        UPDATE room 
+        SET is_confirmed = true 
+        WHERE admin_user_id = ? AND id = ?; 
+    `;
+    const result = await executeQuery(query, [adminData.userId, adminData.roomId]);
+    if (result.affectedRows === 0) { throwError(StatusCodes.NOT_FOUND, '해당 방을 찾을 수 없습니다.'); }
+    return result;
+}
