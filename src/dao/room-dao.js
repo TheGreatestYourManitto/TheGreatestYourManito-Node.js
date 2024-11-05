@@ -62,6 +62,12 @@ export const selectRoom = async (userId) => {
     return result;   // 조회된 방 리스트 반환
 };
 
+export const selectRoomBy = async (roomId) => {
+    const query = 'SELECT * FROM room WHERE id = ?';
+    const result = await executeQuery(query, [roomId]);
+    return result[0];
+}
+
 /**
  * 새로운 방을 생성하는 함수
  * 

@@ -2,7 +2,7 @@ import { ConstantResponseStatus, StatusCodes } from '../../common/index.js';
 import { sendResponse, throwError } from '../../common/response-helper.js';
 import asyncHandler from 'express-async-handler';
 import { RoomSchema } from '../dto/room-dto.js';
-import { confirmRoomStatus, createRoom, getManittoResult, participateRoom, removeRoom, removeRoomMember, searchManitto, searchRoom, searchRoomInfo } from '../service/room-service.js';
+import { confirmRoomStatus, createRoom, getManittoResult, participateRoom, removeRoom, removeRoomMember, searchManitto, searchRoom, searchRoomBy, searchRoomInfo } from '../service/room-service.js';
 
 export const RoomController = {
     getRoomList: asyncHandler(async (req, res) => {
@@ -21,8 +21,8 @@ export const RoomController = {
         const { error, value } = RoomSchema.postRoomDto.validate({ userCode: req.get('userCode'), roomName: req.body.roomName, endDate: req.body.endDate });
         if (error) { throwError(StatusCodes.BAD_REQUEST, error.details[0].message); }
         const { userCode, roomName, endDate } = value;
-        const invitationCode = await createRoom(userCode, roomName, endDate);
-        return sendResponse(res, ConstantResponseStatus.CREATED, { "invitationCode": invitationCode });
+        const room = await createRoom(userCode, roomName, endDate);
+        return sendResponse(res, ConstantResponseStatus.CREATED, { "invitationCode": room.invitationCode, "endDate": room.endDate });
     }),
     getRoomInfo: asyncHandler(async (req, res) => {
         const { error, value } = RoomSchema.getRoomInfoDto.validate({ userCode: req.get('userCode'), roomId: req.params.roomId });
@@ -57,7 +57,9 @@ export const RoomController = {
         if (error) { throwError(StatusCodes.BAD_REQUEST, error.details[0].message); }
         const { userCode, roomId } = value;
         const user = await searchManitto(userCode, roomId);
-        return sendResponse(res, ConstantResponseStatus.SUCCESS, { "receiver": { "userName": user.nickname, "userId": user.id } });
+        const room = await searchRoomBy(roomId);
+        console.log(room);
+        return sendResponse(res, ConstantResponseStatus.SUCCESS, { "receiver": { "userName": user.nickname, "userId": user.id }, "endDate": room.end_date });
     }),
     getRoomResult: asyncHandler(async (req, res) => {
         const { error, value } = RoomSchema.getRoomInfoDto.validate({ userCode: req.get('userCode'), roomId: req.params.roomId });
