@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 import { generateUniqueRandomCode } from '../../common/code-generator.js';
 import { throwError } from '../../common/response-helper.js';
-import { checkRoomAdmin, countCheerByType, deleteRoomMember, getRoomManittoCheerSummary, insertManitto, insertRoom, isRoomCodeExists, selectManittoId, selectManittoInfo, selectRoom, selectRoomIdByCode, selectRoomInfo, selectUserIdByCode, selectUserIdFromManitto, updateManittoUserId, updateRoomStatus } from '../dao/room-dao.js';
+import { checkRoomAdmin, countCheerByType, deleteRoomMember, getRoomManittoCheerSummary, insertManitto, insertRoom, isRoomCodeExists, selectManittoId, selectManittoInfo, selectRoom, selectRoomBy, selectRoomIdByCode, selectRoomInfo, selectUserIdByCode, selectUserIdFromManitto, updateManittoUserId, updateRoomStatus } from '../dao/room-dao.js';
 import { shuffleArray } from '../../common/utils.js';
 import { updateUserRoomSetting } from '../dao/user-room-setting-dao.js';
 
@@ -20,6 +20,10 @@ export const searchRoom = async (userCode) => {
     return await selectRoom(userId); // 유저 ID를 사용하여 방 정보 가져오기
 };
 
+export const searchRoomBy = async (roomId) => {
+    return await selectRoomBy(roomId);
+}
+
 /**
  * 새로운 방을 생성하는 함수
  * 
@@ -36,7 +40,7 @@ export const createRoom = async (userCode, roomName, endDate) => {
     const randomCode = await generateUniqueRandomCode("R", isRoomCodeExists);
     const userId = await selectUserIdByCode(userCode);
     await insertRoom({ userId, roomCode: randomCode, roomName, endDate });
-    return randomCode; // 생성된 방 코드 반환
+    return { invitationCode: randomCode, endDate }; // 생성된 방 코드, 종료일 반환
 }
 
 /**
