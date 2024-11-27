@@ -39,5 +39,6 @@ export const insertUser = async (userData) => {
 export const selectUser = async (deviceId) => {
     const query = 'SELECT * FROM user WHERE device_id = ?';
     const result = await executeQuery(query, [deviceId]);
+    if (result.length === 0) { throwError(StatusCodes.NOT_FOUND, '해당 유저을 찾을 수 없습니다.'); }
     return result[0];
 };
