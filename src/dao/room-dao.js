@@ -153,7 +153,7 @@ export const selectRoomInfo = async (roomData) => {
         isAdmin: isAdmin,   // 관리자 여부
         members: userResult.map(user => ({
             userId: user.user_id,
-            nickname: user.nickname
+            userName: user.nickname
         }))  // 유저 목록
     };
 }
